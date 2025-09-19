@@ -16,29 +16,43 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-/* thirdparty */
-#include <cutest.h>
+/* standard */
+#include <stdbool.h>
+#include <stddef.h>
+#include <string.h>
 
 /* local private */
-#include "request.h"
-
-/* local public */
-#include "chttp.h"
-
-
-void
-test_request_parse() {
-    struct chttp_request req;
-
-    eqint(0, request_fromstring(&req, "GET / HTTP/1.1\r\n"));
-    // eqstr("GET", req.verb);
-    // eqstr("/", req.path);
-    // eqstr("HTTP/1.1", req.protocol);
-}
+#include "str.h"
 
 
 int
-main() {
-    test_request_parse();
-    return EXIT_SUCCESS;
+strsplit(char *str, const char *delim, char **out[], int count) {
+    int i;
+    char *saveptr;
+    char *token;
+
+    if ((str == NULL) || (count < 1) || (out == NULL)) {
+        return -1;
+    }
+
+    token = strtok_r(str, delim, &saveptr);
+    if (token == NULL) {
+        *out[0] = str;
+        return 0;
+    }
+    *out[0] = token;
+
+    for (i = 1; i < count; i++) {
+        token = strtok_r(NULL, delim, &saveptr);
+        if (token == NULL) {
+            return i;
+        }
+        *out[i] = token;
+    }
+
+    if (strtok_r(NULL, delim, &saveptr)) {
+        return -1;
+    }
+
+    return i;
 }

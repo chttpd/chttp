@@ -16,29 +16,12 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-/* thirdparty */
-#include <cutest.h>
+#ifndef TESTS_FIXTURES_H_
+#define TESTS_FIXTURES_H_
 
-/* local private */
-#include "request.h"
 
 /* local public */
 #include "chttp.h"
 
 
-void
-test_request_parse() {
-    struct chttp_request req;
-
-    eqint(0, request_fromstring(&req, "GET / HTTP/1.1\r\n"));
-    // eqstr("GET", req.verb);
-    // eqstr("/", req.path);
-    // eqstr("HTTP/1.1", req.protocol);
-}
-
-
-int
-main() {
-    test_request_parse();
-    return EXIT_SUCCESS;
-}
+#endif  // TESTS_FIXTURES_H_

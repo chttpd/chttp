@@ -20,19 +20,19 @@
 #define CHTTP_LINEARBUFFER_H_
 
 
-/* standard */
-#include <stddef.h>
+/* local public */
+#include "chttp.h"
 
 
-struct linearbuffer {
-    char *backend;
-    size_t size;
-    size_t len;
-};
+#define linearbuffer_avail(lb) ((lb)->size - (lb)->len)
 
 
 void
-linearbuffer_init(struct linearbuffer *lb, void *backend, size_t size);
+linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size);
+
+
+int
+linearbuffer_write(struct linearbuffer *lb, char *src, size_t size);
 
 
 #endif  // CHTTP_LINEARBUFFER_H_

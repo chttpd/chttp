@@ -9,13 +9,29 @@ project(chttp
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 
+# project configuration
+include(config.cmake)
+
+
+# public include directory
+include_directories(
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_BINARY_DIR}/include
+)
+configure_file(
+  include/chttp.h.in 
+  include/chttp.h 
+  @ONLY
+)
+
+
 # cmake libs
-include (cmake/build.cmake)
-include (cmake/menu.cmake)
-include (cmake/lint.cmake)
-include (cmake/valgrind.cmake)
-include (cmake/cpack.cmake)
-include (cmake/install.cmake)
+include(cmake/build.cmake)
+include(cmake/menu.cmake)
+include(cmake/lint.cmake)
+include(cmake/valgrind.cmake)
+include(cmake/cpack.cmake)
+include(cmake/install.cmake)
 
 
 # core tunneling and networking

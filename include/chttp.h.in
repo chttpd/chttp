@@ -16,29 +16,40 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-/* thirdparty */
-#include <cutest.h>
-
-/* local private */
-#include "request.h"
-
-/* local public */
-#include "chttp.h"
+#ifndef INCLUDE_CHTTP_H_
+#define INCLUDE_CHTTP_H_
 
 
-void
-test_request_parse() {
-    struct chttp_request req;
-
-    eqint(0, request_fromstring(&req, "GET / HTTP/1.1\r\n"));
-    // eqstr("GET", req.verb);
-    // eqstr("/", req.path);
-    // eqstr("HTTP/1.1", req.protocol);
-}
+/* standard */
+#include <stddef.h>
+#include <stddef.h>
 
 
-int
-main() {
-    test_request_parse();
-    return EXIT_SUCCESS;
-}
+typedef int httpstatus_t;
+struct linearbuffer {
+    char *backend;
+    size_t size;
+    size_t len;
+};
+
+
+#cmakedefine CONFIG_CHTTP_REQUEST_BUFFSIZE @CONFIG_CHTTP_REQUEST_BUFFSIZE@
+#cmakedefine CONFIG_CHTTP_RESPONSE_BUFFSIZE @CONFIG_CHTTP_RESPONSE_BUFFSIZE@
+#cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
+#define CHTTP_REQUEST_SHAREDBUFF_SIZE \
+    (CONFIG_CHTTP_REQUEST_BUFFSIZE + CONFIG_CHTTP_RESPONSE_BUFFSIZE)
+
+
+struct chttp_request {
+    struct linearbuffer buff;
+
+    char *verb;
+    char *path;
+    char *query;
+    char *protocol;
+
+    char sharedbuff[CHTTP_REQUEST_SHAREDBUFF_SIZE];
+};
+
+
+#endif  // INCLUDE_CHTTP_H_

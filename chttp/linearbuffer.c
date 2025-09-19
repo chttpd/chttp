@@ -18,13 +18,28 @@
  */
 
 
+/* standard */
+#include <string.h>
+
 /* local private */
 #include "linearbuffer.h"
 
 
 void
-linearbuffer_init(struct linearbuffer *lb, void *backend, size_t size) {
+linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size) {
     lb->backend = backend;
     lb->size = size;
     lb->len = 0;
+}
+
+
+int
+linearbuffer_write(struct linearbuffer *lb, char *src, size_t size) {
+    if (size > linearbuffer_avail(lb)) {
+        return -1;
+    }
+
+    memcpy(lb->backend + lb->len, src, size);
+    lb->len += size;
+    return 0;
 }

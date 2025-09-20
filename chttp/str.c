@@ -19,6 +19,7 @@
 /* standard */
 #include <stdbool.h>
 #include <stddef.h>
+#include <ctype.h>
 #include <string.h>
 
 /* local private */
@@ -40,14 +41,14 @@ strsplit(char *str, const char *delim, char **out[], int count) {
         *out[0] = str;
         return 0;
     }
-    *out[0] = token;
+    *out[0] = strtrim(token);
 
     for (i = 1; i < count; i++) {
         token = strtok_r(NULL, delim, &saveptr);
         if (token == NULL) {
             return i;
         }
-        *out[i] = token;
+        *out[i] = strtrim(token);
     }
 
     if (strtok_r(NULL, delim, &saveptr)) {
@@ -55,4 +56,24 @@ strsplit(char *str, const char *delim, char **out[], int count) {
     }
 
     return i;
+}
+
+
+char *
+strtrim(char *s) {
+    if (s == NULL) {
+        return NULL;
+    }
+    int l = strlen(s);
+
+    while (s[0] && isspace(s[0])) {
+        s++;
+        l--;
+    }
+
+    while (isspace(s[l -1])) {
+        s[--l] = 0;
+    }
+
+    return s;
 }

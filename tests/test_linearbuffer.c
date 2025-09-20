@@ -36,8 +36,11 @@ test_linearbuffer() {
     eqint(0, b.len);
     eqptr(backend, b.backend);
 
-    eqint(0, linearbuffer_write(&b, "foo bar", 7));
-    eqint(7, b.len);
+    eqptr(backend, linearbuffer_allocate(&b, "foo bar", 7));
+    eqint(8, b.len);
+
+    eqptr(backend + 8, linearbuffer_unsafeallocate(&b, "baz"));
+    eqint(12, b.len);
 }
 
 

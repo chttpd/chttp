@@ -16,12 +16,11 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef INCLUDE_CHTTP_H_
-#define INCLUDE_CHTTP_H_
+#ifndef INCLUDE_CHTTP_H_IN_
+#define INCLUDE_CHTTP_H_IN_
 
 
 /* standard */
-#include <stddef.h>
 #include <stddef.h>
 
 
@@ -52,4 +51,4 @@ struct chttp_request {
 };
 
 
-#endif  // INCLUDE_CHTTP_H_
+#endif  // INCLUDE_CHTTP_H_IN_

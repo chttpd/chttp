@@ -29,11 +29,14 @@
 void
 test_request_parse() {
     struct chttp_request req;
+    memset(&req, 0, sizeof(req));
 
-    eqint(0, request_fromstring(&req, "GET / HTTP/1.1\r\n"));
-    // eqstr("GET", req.verb);
-    // eqstr("/", req.path);
-    // eqstr("HTTP/1.1", req.protocol);
+    eqint(0, request_fromstring(&req,
+                "GET /foo?bar=baz%%20qux HTTP/1.1\r\n"));
+    eqstr("GET", req.verb);
+    eqstr("/foo", req.path);
+    eqstr("bar=baz%20qux", req.query);
+    eqstr("HTTP/1.1", req.protocol);
 }
 
 

@@ -1,5 +1,6 @@
 include(CTest)
 list(APPEND testrules
+  str
   linearbuffer
   request
 )

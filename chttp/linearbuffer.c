@@ -33,13 +33,32 @@ linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size) {
 }
 
 
-int
-linearbuffer_write(struct linearbuffer *lb, char *src, size_t size) {
-    if (size > linearbuffer_avail(lb)) {
-        return -1;
+char *
+linearbuffer_allocate(struct linearbuffer *lb, char *src, size_t size) {
+    char *start;
+
+    if (size == linearbuffer_avail(lb)) {
+        return NULL;
     }
 
-    memcpy(lb->backend + lb->len, src, size);
-    lb->len += size;
-    return 0;
+    start = lb->backend + lb->len;
+    strncpy(start, src, size);
+
+    /* +1 null termination */
+    lb->len += size + 1;
+    return start;
+}
+
+
+char *
+linearbuffer_unsafeallocate(struct linearbuffer *lb, char *src) {
+    char *start;
+    char *end;
+
+    start = lb->backend + lb->len;
+    end = stpcpy(start, src);
+
+    /* +1 null termination */
+    lb->len += (end - start) + 1;
+    return start;
 }

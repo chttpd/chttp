@@ -31,8 +31,12 @@ void
 linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size);
 
 
-int
-linearbuffer_write(struct linearbuffer *lb, char *src, size_t size);
+char *
+linearbuffer_allocate(struct linearbuffer *lb, char *src, size_t size);
+
+
+char *
+linearbuffer_unsafeallocate(struct linearbuffer *lb, char *src);
 
 
 #endif  // CHTTP_LINEARBUFFER_H_

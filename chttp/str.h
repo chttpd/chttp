@@ -24,4 +24,8 @@ int
 strsplit(char *str, const char *delim, char **out[], int count);
 
 
+char *
+strtrim(char *s);
+
+
 #endif  // CHTTP_STR_H_

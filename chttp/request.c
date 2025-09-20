@@ -25,24 +25,32 @@
 /* local private */
 #include "str.h"
 #include "uri.h"
+#include "linearbuffer.h"
 #include "request.h"
 
 
 static int
 _startline_parse(struct chttp_request *req, char *line) {
-    char *uri;
+    char *path;
+    char *verb;
+    char *protocol;
+    char *query;
 
     if (strsplit(line, " ",
-            (char **[]){&req->verb, &uri, &req->protocol}, 3) != 3) {
+            (char **[]){&verb, &path, &protocol}, 3) != 3) {
         return -1;
     }
 
     /* querystring */
-    if (strsplit(uri, "?", (char **[]){&req->path, &req->query}, 2) == -1) {
+    if (strsplit(path, "?", (char **[]){&path, &query}, 2) == -1) {
         return -1;
     }
-
     uridecode(req->query);
+
+    req->verb = linearbuffer_unsafeallocate(&req->buff, verb);
+    req->path = linearbuffer_unsafeallocate(&req->buff, path);
+    req->query = linearbuffer_unsafeallocate(&req->buff, query);
+    req->protocol = linearbuffer_unsafeallocate(&req->buff, protocol);
     return 0;
 }
 
@@ -51,6 +59,9 @@ httpstatus_t
 request_frombuffer(struct chttp_request *req, char *header) {
     char *line;
     char *saveptr;
+
+    linearbuffer_init(&req->buff, req->sharedbuff,
+            CHTTP_REQUEST_SHAREDBUFF_SIZE);
 
     /* startline */
     line = strtok_r(header, "\n", &saveptr);

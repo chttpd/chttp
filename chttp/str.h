@@ -21,7 +21,7 @@
 
 
 int
-strsplit(char *str, const char *delim, int count, char *out[]);
+strsplit(char *str, const char *delim, int count, char **out[]);
 
 
 char *

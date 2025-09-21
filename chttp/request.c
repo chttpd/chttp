@@ -31,35 +31,61 @@
 
 static int
 _startline_parse(struct chttp_request *req, char *line) {
-    char *path;
-    char *verb;
-    char *protocol;
-    char *query;
+    char *tokens[3];
+    int ret;
 
-    if (strsplit(line, " ",
-            (char **[]){&verb, &path, &protocol}, 3) != 3) {
+    if (strsplit(line, " ", 3, tokens) != 3) {
         return -1;
     }
+    req->verb = linearbuffer_allocate(&req->buff, tokens[0]);
+    req->protocol = linearbuffer_allocate(&req->buff, tokens[2]);
 
     /* querystring */
-    if (strsplit(path, "?", (char **[]){&path, &query}, 2) == -1) {
+    ret = strsplit(tokens[1], "?", 2, tokens);
+    if (ret < 1) {
         return -1;
     }
-    uridecode(req->query);
 
-    req->verb = linearbuffer_unsafeallocate(&req->buff, verb);
-    req->path = linearbuffer_unsafeallocate(&req->buff, path);
-    req->query = linearbuffer_unsafeallocate(&req->buff, query);
-    req->protocol = linearbuffer_unsafeallocate(&req->buff, protocol);
+    req->path = linearbuffer_allocate(&req->buff, tokens[0]);
+    if (ret == 2) {
+        uridecode(tokens[1]);
+        req->query = linearbuffer_allocate(&req->buff, tokens[1]);
+    }
+    else {
+        req->query = NULL;
+    }
+
     return 0;
 }
 
 
 httpstatus_t
-request_frombuffer(struct chttp_request *req, char *header) {
+request_frombuffer(struct chttp_request *req, char *header, size_t size) {
+    int count = 0;
     char *line;
     char *saveptr;
 
+    if (size < 16) {
+        return 400;
+    }
+
+    if (size > CONFIG_CHTTP_REQUEST_BUFFSIZE) {
+        return 431;
+    }
+
+    if (strncmp("\n\n", header + (size - 2), 2) == 0) {
+        size--;
+    }
+    else if (strncmp("\r\n\r\n", header + (size - 4), 4) == 0) {
+        size -= 2;
+    }
+    else {
+        return 400;
+    }
+
+    header[size] = 0;
+
+    memset(req, 0, sizeof(struct chttp_request));
     linearbuffer_init(&req->buff, req->sharedbuff,
             CHTTP_REQUEST_SHAREDBUFF_SIZE);
 
@@ -73,24 +99,35 @@ request_frombuffer(struct chttp_request *req, char *header) {
         return 414;
     }
 
+    count = linearbuffer_splitallocate(&req->buff, saveptr, "\n",
+            req->headers, CONFIG_CHTTP_REQUEST_HEADERSMAX);
+    if (count == -1) {
+        /* extra token found */
+        return 431;
+    }
+    if (count == -2) {
+        /* zero length heder found */
+        return 400;
+    }
+
+    req->headerscount = count;
     return 0;
 }
 
 
 httpstatus_t
 request_fromstring(struct chttp_request *req, const char *fmt, ...) {
-    int ret;
+    size_t bytes;
+    va_list args;
     char tmp[CONFIG_CHTTP_REQUEST_BUFFSIZE];
 
-    va_list args;
-
     va_start(args, fmt);
-    ret = vsprintf(tmp, fmt, args);
+    bytes = vsprintf(tmp, fmt, args);
     va_end(args);
 
-    if (ret < 0) {
+    if (bytes < 0) {
         return -1;
     }
 
-    return request_frombuffer(req, tmp);
+    return request_frombuffer(req, tmp, bytes);
 }

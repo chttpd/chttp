@@ -36,16 +36,40 @@ test_linearbuffer() {
     eqint(0, b.len);
     eqptr(backend, b.backend);
 
-    eqptr(backend, linearbuffer_allocate(&b, "foo bar", 7));
+    eqptr(backend, linearbuffer_allocate(&b, "foo bar"));
     eqint(8, b.len);
 
-    eqptr(backend + 8, linearbuffer_unsafeallocate(&b, "baz"));
+    eqptr(backend + 8, linearbuffer_allocate(&b, "baz"));
     eqint(12, b.len);
+}
+
+
+void
+test_linearbuffer_splitallocate() {
+    char backend[BUFFSIZE];
+    struct linearbuffer b;
+    char in[16];
+    char *out[8];
+
+    linearbuffer_init(&b, backend, BUFFSIZE);
+
+    strcpy(in, "foo\nbar\n\n");
+    eqint(-2, linearbuffer_splitallocate(&b, in, "\n", out, 8));
+
+    strcpy(in, "\r\n\r\n");
+    eqint(-2, linearbuffer_splitallocate(&b, in, "\n", out, 8));
+    eqint(-2, linearbuffer_splitallocate(&b, "\n\n", "\n", out, 8));
+    eqint(-2, linearbuffer_splitallocate(&b, "\n", "\n", out, 8));
+    eqint(0, linearbuffer_splitallocate(&b, "", "\n", out, 8));
+
+    strcpy(in, "foo bar");
+    eqint(2, linearbuffer_splitallocate(&b, in, " ", out, 8));
 }
 
 
 int
 main() {
+    test_linearbuffer_splitallocate();
     test_linearbuffer();
     return EXIT_SUCCESS;
 }

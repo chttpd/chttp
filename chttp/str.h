@@ -21,11 +21,15 @@
 
 
 int
-strsplit(char *str, const char *delim, char **out[], int count);
+strsplit(char *str, const char *delim, int count, char *out[]);
 
 
 char *
-strtrim(char *s);
+strtrim(char *s, int *len);
+
+
+char *
+strtoktrim(char *str, const char *restrict delim, char **restrict saveptr);
 
 
 #endif  // CHTTP_STR_H_

@@ -22,43 +22,87 @@
 #include <string.h>
 
 /* local private */
+#include "str.h"
 #include "linearbuffer.h"
 
 
 void
 linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size) {
     lb->backend = backend;
+    // TODO: delete size
     lb->size = size;
     lb->len = 0;
 }
 
 
 char *
-linearbuffer_allocate(struct linearbuffer *lb, char *src, size_t size) {
+linearbuffer_allocate(struct linearbuffer *lb, char *str) {
     char *start;
+    char *end;
+    int len;
 
-    if (size == linearbuffer_avail(lb)) {
+    if (str == NULL) {
         return NULL;
     }
 
     start = lb->backend + lb->len;
-    strncpy(start, src, size);
+    end = stpcpy(start, str);
+
+    len = end - start;
+    if (len <= 0) {
+        return NULL;
+    }
 
     /* +1 null termination */
-    lb->len += size + 1;
+    lb->len += len + 1;
     return start;
 }
 
 
-char *
-linearbuffer_unsafeallocate(struct linearbuffer *lb, char *src) {
-    char *start;
-    char *end;
+int
+linearbuffer_splitallocate(struct linearbuffer *lb, char *str,
+        const char *delim, char *out[], int count) {
+    int i;
+    char *saveptr;
+    char *token;
+    int toklen;
 
-    start = lb->backend + lb->len;
-    end = stpcpy(start, src);
+    if ((str == NULL) || (count < 1) || (out == NULL)) {
+        return -1;
+    }
 
-    /* +1 null termination */
-    lb->len += (end - start) + 1;
-    return start;
+    token = strtok_r(str, delim, &saveptr);
+    if (token == NULL) {
+        if (saveptr - str) {
+            /* zero length token found */
+            return -2;
+        }
+        return 0;
+    }
+    token = strtrim(token, &toklen);
+    if (toklen == 0) {
+        /* zero length token found */
+        return -2;
+    }
+    out[0] = token;
+
+    for (i = 1; i < count; i++) {
+        token = strtok_r(NULL, delim, &saveptr);
+        if (token == NULL) {
+            return i;
+        }
+
+        token = strtrim(token, &toklen);
+        if (toklen == 0) {
+            /* zero length token found */
+            return -2;
+        }
+        out[i] = linearbuffer_allocate(lb, token);
+    }
+
+    if (strtok_r(NULL, delim, &saveptr)) {
+        return -1;
+    }
+
+    return i;
 }

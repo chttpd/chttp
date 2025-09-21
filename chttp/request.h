@@ -25,7 +25,7 @@
 
 
 httpstatus_t
-request_frombuffer(struct chttp_request *req, char *header);
+request_frombuffer(struct chttp_request *req, char *header, size_t size);
 
 
 httpstatus_t

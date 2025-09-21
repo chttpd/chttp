@@ -47,6 +47,8 @@ struct chttp_request {
     char *query;
     char *protocol;
 
+    unsigned short headerscount;
+    char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
     char sharedbuff[CHTTP_REQUEST_SHAREDBUFF_SIZE];
 };
 

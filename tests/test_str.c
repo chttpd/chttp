@@ -27,79 +27,93 @@
 
 
 static void
+test_strtoktrim() {
+    char *saveptr;
+    char in[16];
+
+    sprintf(in, "\n");
+    eqptr(in, strtoktrim(in, "\n", &saveptr));
+    eqint(0, in[0]);
+    eqptr(in + 1, saveptr);
+    isnull(strtoktrim(NULL, "\n", &saveptr));
+
+    sprintf(in, "foo\r\nbar");
+    eqptr(in, strtoktrim(in, "\n", &saveptr));
+    eqint(0, in[3]);
+    eqptr(in + 5, saveptr);
+    eqstr("bar", strtoktrim(NULL, "\n", &saveptr));
+    eqint(0, in[8]);
+    eqptr(in + 8, saveptr);
+    isnull(strtoktrim(NULL, "\n", &saveptr));
+    eqptr(in + 8, saveptr);
+}
+
+
+static void
 test_strsplit() {
     char tmp[32];
-    char *first = NULL;
-    char *second = NULL;
-
-    /* null */
-    eqint(-1, strsplit(NULL, " ", (char **[]){&first, &second}, 2));
-    isnull(first);
-    isnull(second);
-
-    /* empty */
-    first = NULL;
-    second = NULL;
-    eqint(0, strsplit("", " ", (char **[]){&first, &second}, 2));
-    eqstr("", first);
-    isnull(second);
+    char *out[2];
 
     /* no delimiter inside input string */
-    first = NULL;
-    second = NULL;
     sprintf(tmp, "foobar");
-    eqint(1, strsplit(tmp, " ", (char **[]){&first, &second}, 2));
-    eqstr("foobar", first);
-    isnull(second);
+    eqint(1, strsplit(tmp, " ", 2, out));
+    eqstr("foobar", out[0]);
+
+    /* null */
+    eqint(-1, strsplit(NULL, " ", 2, out));
+
+    /* empty */
+    eqint(0, strsplit("", " ", 2, out));
 
     /* extra delimiter */
-    first = NULL;
-    second = NULL;
     sprintf(tmp, "foo bar ");
-    eqint(2, strsplit(tmp, " ", (char **[]){&first, &second}, 2));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    eqint(2, strsplit(tmp, " ", 2, out));
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 
     /* insufficient token */
-    first = NULL;
-    second = NULL;
-    sprintf(tmp, "foo bar");
-    eqint(2, strsplit(tmp, " ", (char **[]){&first, &second}, 3));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    sprintf(tmp, "foo bar ");
+    eqint(2, strsplit(tmp, " ", 3, out));
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 
     /* extra token */
-    first = NULL;
-    second = NULL;
     sprintf(tmp, "foo bar baz");
-    eqint(-1, strsplit(tmp, " ", (char **[]){&first, &second}, 2));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    eqint(-2, strsplit(tmp, " ", 2, out));
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 
     /* as expected */
-    first = NULL;
-    second = NULL;
     sprintf(tmp, "foo bar");
-    eqint(2, strsplit(tmp, " ", (char **[]){&first, &second}, 2));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    eqint(2, strsplit(tmp, " ", 2, out));
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 }
 
 
 static void
 test_strtrim() {
     char tmp[16];
+    int len;
+
+    sprintf(tmp, "\r");
+    eqint(1, strlen(tmp));
+    eqstr("", strtrim(tmp, &len));
+    eqint(0, len);
 
     sprintf(tmp, " foo ");
-    eqstr("foo", strtrim(tmp));
+    eqstr("foo", strtrim(tmp, &len));
+    eqint(3, len);
 
     sprintf(tmp, "foo\r");
-    eqstr("foo", strtrim(tmp));
+    eqstr("foo", strtrim(tmp, &len));
+    eqint(3, len);
 }
 
 
 int
 main() {
+    test_strtoktrim();
     test_strsplit();
     test_strtrim();
     return EXIT_SUCCESS;

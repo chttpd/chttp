@@ -26,41 +26,8 @@
 #include "str.h"
 
 
-int
-strsplit(char *str, const char *delim, char **out[], int count) {
-    int i;
-    char *saveptr;
-    char *token;
-
-    if ((str == NULL) || (count < 1) || (out == NULL)) {
-        return -1;
-    }
-
-    token = strtok_r(str, delim, &saveptr);
-    if (token == NULL) {
-        *out[0] = str;
-        return 0;
-    }
-    *out[0] = strtrim(token);
-
-    for (i = 1; i < count; i++) {
-        token = strtok_r(NULL, delim, &saveptr);
-        if (token == NULL) {
-            return i;
-        }
-        *out[i] = strtrim(token);
-    }
-
-    if (strtok_r(NULL, delim, &saveptr)) {
-        return -1;
-    }
-
-    return i;
-}
-
-
 char *
-strtrim(char *s) {
+strtrim(char *s, int *len) {
     if (s == NULL) {
         return NULL;
     }
@@ -71,9 +38,85 @@ strtrim(char *s) {
         l--;
     }
 
-    while (isspace(s[l -1])) {
+    while (l && isspace(s[l -1])) {
         s[--l] = 0;
     }
 
+    if (len) {
+        *len = l;
+    }
+
     return s;
+}
+
+
+char *
+strtoktrim(char *str, const char *restrict delim, char **restrict saveptr) {
+    int len;
+    char *start;
+    char *found;
+    int delimlen = strlen(delim);
+
+    if (str) {
+        /* first call */
+        start = str;
+    }
+    else if (*saveptr) {
+        start = *saveptr;
+    }
+    else {
+        return NULL;
+    }
+
+    if (!start[0]) {
+        return NULL;
+    }
+
+    found = strstr(start, delim);
+    if (found) {
+        found[0] = '\0';
+        *saveptr = found + delimlen;
+        return strtrim(start, NULL);
+    }
+
+    found = strtrim(start, &len);
+    *saveptr = found + len;
+    return found;
+}
+
+
+/**
+  * returns:
+  * -2 if extra token found.
+  * -1 if zero length token found.
+  *  0 or greater that represents number of token(s).
+  */
+int
+strsplit(char *str, const char *delim, int count, char *out[]) {
+    int i;
+    char *saveptr;
+    char *token;
+
+    if ((str == NULL) || (count < 1) || (out == NULL)) {
+        return -1;
+    }
+
+    for (i = 0; i < count; i++) {
+        token = strtoktrim(i? NULL: str, delim, &saveptr);
+        if (token == NULL) {
+            return i;
+        }
+
+        if (!token[0]) {
+            return -1;
+        }
+
+        out[i] = token;
+    }
+
+    if (saveptr[0]) {
+        return -2;
+    }
+
+    return i;
 }

@@ -92,7 +92,7 @@ strtoktrim(char *str, const char *restrict delim, char **restrict saveptr) {
   *  0 or greater that represents number of token(s).
   */
 int
-strsplit(char *str, const char *delim, int count, char **out[]) {
+strtokenize(char *str, const char *delim, int count, char **out[]) {
     int i;
     char *saveptr;
     char *token;

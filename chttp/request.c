@@ -31,35 +31,21 @@
 
 static int
 _startline_parse(struct chttp_request *req, char *line) {
-    int ret;
-    char *url;
-    char **tokens[3] = {
-        &req->verb,
-        &url,
-        &req->protocol
-    };
+    char **tokens[4] = {&req->verb, &req->path, &req->protocol, &req->query};
 
-    if (strsplit(line, " ", 3, tokens) != 3) {
-        return -1;
-    }
-    req->verb = linearbuffer_allocate(&req->buff, req->verb);
-    req->protocol = linearbuffer_allocate(&req->buff, req->protocol);
-
-    /* querystring */
-    tokens[0] = &req->path;
-    tokens[1] = &req->query;
-    ret = strsplit(url, "?", 2, tokens);
-    if (ret < 1) {
+    /* verb/uri/protocol */
+    if (strtokenize(line, " ", 3, tokens) != 3) {
         return -1;
     }
 
-    req->path = linearbuffer_allocate(&req->buff, req->path);
-    if (ret == 2) {
-        uridecode(req->query);
-        req->query = linearbuffer_allocate(&req->buff, req->query);
-    }
-    else {
-        req->query = NULL;
+    /* path/querystring */
+    switch(strtokenize(req->path, "?", 2, (char **[]){&req->path,
+                &req->query})) {
+        case 2:
+            uridecode(req->query);
+            break;
+        default:
+            return -1;
     }
 
     return 0;

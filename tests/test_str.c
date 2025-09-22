@@ -58,36 +58,36 @@ test_strsplit() {
 
     /* no delimiter inside input string */
     sprintf(tmp, "foobar");
-    eqint(1, strsplit(tmp, " ", 2, out));
+    eqint(1, strtokenize(tmp, " ", 2, out));
     eqstr("foobar", first);
 
     /* null */
-    eqint(-1, strsplit(NULL, " ", 2, out));
+    eqint(-1, strtokenize(NULL, " ", 2, out));
 
     /* empty */
-    eqint(0, strsplit("", " ", 2, out));
+    eqint(0, strtokenize("", " ", 2, out));
 
     /* extra delimiter */
     sprintf(tmp, "foo bar ");
-    eqint(2, strsplit(tmp, " ", 2, out));
+    eqint(2, strtokenize(tmp, " ", 2, out));
     eqstr("foo", first);
     eqstr("bar", second);
 
     /* insufficient token */
     sprintf(tmp, "foo bar ");
-    eqint(2, strsplit(tmp, " ", 3, out));
+    eqint(2, strtokenize(tmp, " ", 3, out));
     eqstr("foo", first);
     eqstr("bar", second);
 
     /* extra token */
     sprintf(tmp, "foo bar baz");
-    eqint(-2, strsplit(tmp, " ", 2, out));
+    eqint(-2, strtokenize(tmp, " ", 2, out));
     eqstr("foo", first);
     eqstr("bar", second);
 
     /* as expected */
     sprintf(tmp, "foo bar");
-    eqint(2, strsplit(tmp, " ", 2, out));
+    eqint(2, strtokenize(tmp, " ", 2, out));
     eqstr("foo", first);
     eqstr("bar", second);
 }

@@ -19,70 +19,55 @@
 /* thirdparty */
 #include <cutest.h>
 
-#undef T
-#undef CAT
-#undef CTX
-typedef struct point {
-    int x;
-    int y;
-} point_t;
-#define T int
-#define CAT point
-#define CTX int
+
+#undef F
+typedef char *string_t;
+#define F string
 #include "functor.h"
 #include "functor.c"
 
 
-T
-half(CTX c, T v) {
-    return v / c;
+char *
+trimend(void *, char *s) {
+    s[strlen(s) - 1] = 0;
+    return s;
 }
 
 
-T
-doubl(CTX c, T v) {
-    return v * c;
-}
-
-
-T
-plus2(CTX c, T v) {
-    return v + c;
+int
+string_fmap(void *ctx, string_func_t f, char **s) {
+    *s = f(ctx, *s);
+    return 0;
 }
 
 
 void
-test_applicative() {
-    struct point p = {2, 2};
-    struct point_applicative ap = {0};
+test_functor_fmapall() {
+    char buff[16] = "foo\0bar\0";
+    char *foo = buff;
+    char *bar = buff + 4;
+    char **foobar[2] = {&foo, &bar};
 
-    point_compose(&ap, plus2);
-    point_compose(&ap, doubl);
-    point_compose(&ap, plus2);
-    point_compose(&ap, half);
-    point_apply(&ap, &p, 2);
-    eqint(5, p.x);
-    eqint(5, p.y);
+    string_fmapall(NULL, trimend, 2, foobar);
+
+    eqstr("fo", foo);
+    eqstr("ba", bar);
 }
 
 
 void
-test_functor() {
-    struct point p = {2, 2};
+test_functor_fmap() {
+    char buff[4] = "foo\0";
+    char *foo = buff;
 
-    point_fmap(half, &p, 2);
-    eqint(1, p.x);
-    eqint(1, p.y);
-
-    point_fmap(plus2, &p, 2);
-    eqint(3, p.x);
-    eqint(3, p.y);
+    eqint(0, string_fmap(NULL, trimend, &foo));
+    eqstr("fo", foo);
 }
 
 
 int
 main() {
-    test_applicative();
-    test_functor();
+    test_functor_fmapall();
+    test_functor_fmap();
     return EXIT_SUCCESS;
 }

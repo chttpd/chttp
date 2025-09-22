@@ -20,24 +20,17 @@
 #include <stddef.h>  // NOLINT
 
 
-void
-FNAME(_compose)(struct FNAME(_applicative) *ap, FNAME(_applicator_t) f) {
-    ap->funcs[ap->count++] = f;
-}
-
-
-void
-FNAME(_fmap)(FNAME(_applicator_t) f, FNAME(_t) *p, CTX ctx) {
-    p->x = f(ctx, p->x);
-    p->y = f(ctx, p->y);
-}
-
-
-void
-FNAME(_apply)(struct FNAME(_applicative) *ap, FNAME(_t) *p, CTX ctx) {
+int
+FNAME(_fmapall)(void *ctx, FNAME(_func_t) f, int count, FNAME(_t) *p[]) {
+    int ret;
     int i;
 
-    for (i = 0; i < ap->count; i++) {
-        point_fmap(ap->funcs[i], p, ctx);
+    for (i = 0; i < count; i++) {
+        ret = FNAME(_fmap)(ctx, f, p[i]);
+        if (ret) {
+            return ret;
+        }
     }
+
+    return 0;
 }

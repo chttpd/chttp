@@ -20,56 +20,67 @@
 #include <cutest.h>
 
 /* local private */
-#include "linearbuffer.h"
+#include "store.h"
 
 
 #define BUFFSIZE  512
 
 
 void
-test_linearbuffer() {
+test_store_replaceall() {
+    char buff[16] = "foo\0bar\0";
     char backend[BUFFSIZE];
-    struct linearbuffer b;
+    struct chttp_store b;
+    char *foo = buff;
+    char *bar = buff + 4;
+    char **both[2] = {&foo, &bar};
 
-    linearbuffer_init(&b, backend, BUFFSIZE);
-    eqint(BUFFSIZE, b.size);
-    eqint(0, b.len);
-    eqptr(backend, b.backend);
-
-    eqptr(backend, linearbuffer_allocate(&b, "foo bar"));
-    eqint(8, b.len);
-
-    eqptr(backend + 8, linearbuffer_allocate(&b, "baz"));
-    eqint(12, b.len);
+    store_init(&b, backend, BUFFSIZE);
+    eqint(0, store_replaceall(&b, 2, both));
+    eqstr("foo", foo);
+    eqptr(backend, foo);
+    eqstr("bar", bar);
+    eqptr(backend + 4, bar);
+    eqbin("foo\0bar\0", backend, 8);
 }
 
 
 void
-test_linearbuffer_splitallocate() {
+test_store_replace() {
+    char buff[8] = "foo\0";
     char backend[BUFFSIZE];
-    struct linearbuffer b;
-    char in[16];
-    char *out[8];
+    struct chttp_store b;
+    char *foo = buff;
 
-    linearbuffer_init(&b, backend, BUFFSIZE);
+    store_init(&b, backend, BUFFSIZE);
+    eqint(0, store_replace(&b, &foo));
+    eqstr("foo", foo);
+    eqptr(backend, foo);
+}
 
-    strcpy(in, "foo\nbar\n\n");
-    eqint(-2, linearbuffer_splitallocate(&b, in, "\n", out, 8));
 
-    strcpy(in, "\r\n\r\n");
-    eqint(-2, linearbuffer_splitallocate(&b, in, "\n", out, 8));
-    eqint(-2, linearbuffer_splitallocate(&b, "\n\n", "\n", out, 8));
-    eqint(-2, linearbuffer_splitallocate(&b, "\n", "\n", out, 8));
-    eqint(0, linearbuffer_splitallocate(&b, "", "\n", out, 8));
+void
+test_store() {
+    char backend[BUFFSIZE];
+    struct chttp_store b;
 
-    strcpy(in, "foo bar");
-    eqint(2, linearbuffer_splitallocate(&b, in, " ", out, 8));
+    store_init(&b, backend, BUFFSIZE);
+    eqint(BUFFSIZE, b.size);
+    eqint(0, b.len);
+    eqptr(backend, b.backend);
+
+    eqptr(backend, store_allocate(&b, "foo bar"));
+    eqint(8, b.len);
+
+    eqptr(backend + 8, store_allocate(&b, "baz"));
+    eqint(12, b.len);
 }
 
 
 int
 main() {
-    test_linearbuffer_splitallocate();
-    test_linearbuffer();
+    test_store_replaceall();
+    test_store_replace();
+    test_store();
     return EXIT_SUCCESS;
 }

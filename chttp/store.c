@@ -23,11 +23,11 @@
 
 /* local private */
 #include "str.h"
-#include "linearbuffer.h"
+#include "store.h"
 
 
 void
-linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size) {
+store_init(struct chttp_store *lb, char *backend, size_t size) {
     lb->backend = backend;
     // TODO: delete size
     lb->size = size;
@@ -36,7 +36,7 @@ linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size) {
 
 
 char *
-linearbuffer_allocate(struct linearbuffer *lb, char *str) {
+store_allocate(struct chttp_store *lb, char *str) {
     char *start;
     char *end;
     int len;
@@ -60,49 +60,12 @@ linearbuffer_allocate(struct linearbuffer *lb, char *str) {
 
 
 int
-linearbuffer_splitallocate(struct linearbuffer *lb, char *str,
-        const char *delim, char *out[], int count) {
-    int i;
-    char *saveptr;
-    char *token;
-    int toklen;
+store_replace(struct chttp_store *lb, char **ptr) {
+    return str_fmap(lb, (str_func_t)store_allocate, ptr);
+}
 
-    if ((str == NULL) || (count < 1) || (out == NULL)) {
-        return -1;
-    }
 
-    token = strtok_r(str, delim, &saveptr);
-    if (token == NULL) {
-        if (saveptr - str) {
-            /* zero length token found */
-            return -2;
-        }
-        return 0;
-    }
-    token = strtrim(token, &toklen);
-    if (toklen == 0) {
-        /* zero length token found */
-        return -2;
-    }
-    out[0] = token;
-
-    for (i = 1; i < count; i++) {
-        token = strtok_r(NULL, delim, &saveptr);
-        if (token == NULL) {
-            return i;
-        }
-
-        token = strtrim(token, &toklen);
-        if (toklen == 0) {
-            /* zero length token found */
-            return -2;
-        }
-        out[i] = linearbuffer_allocate(lb, token);
-    }
-
-    if (strtok_r(NULL, delim, &saveptr)) {
-        return -1;
-    }
-
-    return i;
+int
+store_replaceall(struct chttp_store *lb, int count, char **all[]) {
+    return str_fmapall(lb, (str_func_t)store_allocate, count, all);
 }

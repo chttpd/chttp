@@ -2,7 +2,7 @@ include(CTest)
 list(APPEND testrules
   functor
   str
-  linearbuffer
+  store
   request
 )
 

@@ -25,7 +25,7 @@
 /* local private */
 #include "str.h"
 #include "uri.h"
-#include "linearbuffer.h"
+#include "store.h"
 #include "request.h"
 
 
@@ -39,22 +39,58 @@ _startline_parse(struct chttp_request *req, char *line) {
     }
 
     /* path/querystring */
-    switch(strtokenize(req->path, "?", 2, (char **[]){&req->path,
+    switch (strtokenize(req->path, "?", 2, (char **[]){&req->path,
                 &req->query})) {
         case 2:
             uridecode(req->query);
+            break;
+        case 1:
+            req->query = NULL;
             break;
         default:
             return -1;
     }
 
+    return store_replaceall(&req->buff, 4, tokens);
+}
+
+
+static httpstatus_t
+_headers_parse(struct chttp_request *req, char *headers) {
+    int i;
+    int count;
+    char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+
+    for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
+        ptrs[i] = &req->headers[i];
+    }
+
+    count = strtokenize(headers, "\n", CONFIG_CHTTP_REQUEST_HEADERSMAX, ptrs);
+    if (count == -1) {
+        /* extra token found */
+        return 400;
+    }
+
+    if (count == -2) {
+        /* zero length heder found */
+        return 431;
+    }
+
+    if (count == 0) {
+        return 0;
+    }
+
+    if (store_replaceall(&req->buff, count, ptrs)) {
+        return 500;
+    }
+
+    req->headerscount = count;
     return 0;
 }
 
 
 httpstatus_t
 request_frombuffer(struct chttp_request *req, char *header, size_t size) {
-    int count = 0;
     char *line;
     char *saveptr;
 
@@ -79,7 +115,7 @@ request_frombuffer(struct chttp_request *req, char *header, size_t size) {
     header[size] = 0;
 
     memset(req, 0, sizeof(struct chttp_request));
-    linearbuffer_init(&req->buff, req->sharedbuff,
+    store_init(&req->buff, req->sharedbuff,
             CHTTP_REQUEST_SHAREDBUFF_SIZE);
 
     /* startline */
@@ -92,19 +128,7 @@ request_frombuffer(struct chttp_request *req, char *header, size_t size) {
         return 414;
     }
 
-    count = linearbuffer_splitallocate(&req->buff, saveptr, "\n",
-            req->headers, CONFIG_CHTTP_REQUEST_HEADERSMAX);
-    if (count == -1) {
-        /* extra token found */
-        return 431;
-    }
-    if (count == -2) {
-        /* zero length heder found */
-        return 400;
-    }
-
-    req->headerscount = count;
-    return 0;
+    return _headers_parse(req, saveptr);
 }
 
 

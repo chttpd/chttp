@@ -16,28 +16,31 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CHTTP_LINEARBUFFER_H_
-#define CHTTP_LINEARBUFFER_H_
+#ifndef CHTTP_STORE_H_
+#define CHTTP_STORE_H_
 
 
 /* local public */
 #include "chttp.h"
 
 
-#define linearbuffer_avail(lb) ((lb)->size - (lb)->len)
+#define store_avail(lb) ((lb)->size - (lb)->len)
 
 
 void
-linearbuffer_init(struct linearbuffer *lb, char *backend, size_t size);
+store_init(struct chttp_store *lb, char *backend, size_t size);
 
 
 char *
-linearbuffer_allocate(struct linearbuffer *lb, char *src);
+store_allocate(struct chttp_store *lb, char *src);
 
 
 int
-linearbuffer_splitallocate(struct linearbuffer *lb, char *src,
-        const char *delim, char *out[], int count);
+store_replace(struct chttp_store *lb, char **ptr);
 
 
-#endif  // CHTTP_LINEARBUFFER_H_
+int
+store_replaceall(struct chttp_store *lb, int count, char **all[]);
+
+
+#endif  // CHTTP_STORE_H_

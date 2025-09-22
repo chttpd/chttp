@@ -20,6 +20,12 @@
 #define CHTTP_STR_H_
 
 
+#undef F
+typedef char *str_t;
+#define F str
+#include "functor.h"
+
+
 int
 strtokenize(char *str, const char *delim, int count, char **out[]);
 

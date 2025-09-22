@@ -23,26 +23,18 @@
 /* generic stuff (must included once) */
 #define FNAME_PASTE(x, y) x ## y
 #define FNAME_EVAL(x, y)  FNAME_PASTE(x, y)
-#define FNAME(n) FNAME_EVAL(CAT, n)
+#define FNAME(n) FNAME_EVAL(F, n)
 
 
 #endif  // CHTTP_FUNCTOR_H_
 
 
-typedef T (*FNAME(_applicator_t))(CTX, T);
-struct FNAME(_applicative) {
-    int count;
-    FNAME(_applicator_t) funcs[8];
-};
+typedef FNAME(_t) (*FNAME(_func_t))(void *, FNAME(_t));
 
 
-void
-FNAME(_compose)(struct FNAME(_applicative) *ap, FNAME(_applicator_t) f);
+int
+FNAME(_fmap)(void *ctx, FNAME(_func_t) f, FNAME(_t) *p);
 
 
-void
-FNAME(_fmap)(FNAME(_applicator_t) f, FNAME(_t) *p, CTX ctx);
-
-
-void
-FNAME(_apply)(struct FNAME(_applicative) *ap, FNAME(_t) *p, CTX ctx);
+int
+FNAME(_fmapall)(void *ctx, FNAME(_func_t) f, int count, FNAME(_t) *p[]);

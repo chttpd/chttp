@@ -24,14 +24,6 @@
 #include <stddef.h>
 
 
-typedef int httpstatus_t;
-struct linearbuffer {
-    char *backend;
-    size_t size;
-    size_t len;
-};
-
-
 #cmakedefine CONFIG_CHTTP_REQUEST_BUFFSIZE @CONFIG_CHTTP_REQUEST_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_RESPONSE_BUFFSIZE @CONFIG_CHTTP_RESPONSE_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
@@ -39,8 +31,16 @@ struct linearbuffer {
     (CONFIG_CHTTP_REQUEST_BUFFSIZE + CONFIG_CHTTP_RESPONSE_BUFFSIZE)
 
 
+typedef int httpstatus_t;
+struct chttp_store {
+    char *backend;
+    size_t size;
+    size_t len;
+};
+
+
 struct chttp_request {
-    struct linearbuffer buff;
+    struct chttp_store buff;
 
     char *verb;
     char *path;

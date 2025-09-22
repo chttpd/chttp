@@ -29,7 +29,7 @@
 void
 store_init(struct chttp_store *lb, char *backend, size_t size) {
     lb->backend = backend;
-    // TODO: delete size
+    // TODO: delete size or check it on allocation
     lb->size = size;
     lb->len = 0;
 }

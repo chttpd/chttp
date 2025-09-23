@@ -20,16 +20,4 @@
 #define CHTTP_REQUEST_H_
 
 
-/* local public */
-#include "chttp.h"
-
-
-httpstatus_t
-request_frombuffer(struct chttp_request *req, char *header, size_t size);
-
-
-httpstatus_t
-request_fromstring(struct chttp_request *req, const char *fmt, ...);
-
-
 #endif  // CHTTP_REQUEST_H_

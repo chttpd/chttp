@@ -31,11 +31,18 @@ include(cmake/menu.cmake)
 include(cmake/lint.cmake)
 include(cmake/valgrind.cmake)
 include(cmake/cpack.cmake)
-include(cmake/install.cmake)
+include(cmake/uninstall.cmake)
 
 
 # core tunneling and networking
 add_subdirectory(chttp)
+
+
+install(TARGETS chttp DESTINATION "lib")
+install(FILES 
+  ${PROJECT_BINARY_DIR}/include/chttp.h 
+  DESTINATION "include/"
+)
 
 
 # test

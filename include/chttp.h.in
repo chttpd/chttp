@@ -53,4 +53,12 @@ struct chttp_request {
 };
 
 
+httpstatus_t
+request_frombuffer(struct chttp_request *req, char *header, size_t size);
+
+
+httpstatus_t
+request_fromstring(struct chttp_request *req, const char *fmt, ...);
+
+
 #endif  // INCLUDE_CHTTP_H_IN_

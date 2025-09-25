@@ -28,8 +28,11 @@
 #cmakedefine CONFIG_CHTTP_REQUEST_BUFFSIZE @CONFIG_CHTTP_REQUEST_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_RESPONSE_BUFFSIZE @CONFIG_CHTTP_RESPONSE_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
+// #cmakedefine CONFIG_CHTTP_RESPONSE_CONTENTMAX \
+//     @CONFIG_CHTTP_RESPONSE_CONTENTMAX@
 
 
+typedef int chttp_status_t;
 enum chttp_connection {
     CHTTP_CONNECTION_NOTSPECIFIED = 0,
     CHTTP_CONNECTION_CLOSE = 1,
@@ -37,7 +40,7 @@ enum chttp_connection {
 };
 
 
-typedef int chttp_status_t;
+#define store_avail(lb) ((lb)->size - (lb)->len)
 struct chttp_store {
     char *backend;
     size_t size;
@@ -51,7 +54,9 @@ struct chttp_responseview {
     const char *protocol;
     const char *contenttype;
     const char *charset;
+    size_t contentmax;
     ssize_t contentlength;
+    char *content;
 
     unsigned short headerscount;
     const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
@@ -109,7 +114,7 @@ chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...);
 
 
 int
-chttp_response_start(struct chttp_response *resp, chttp_status_t status, 
+chttp_response_start(struct chttp_response *resp, chttp_status_t status,
         const char *text);
 
 
@@ -124,6 +129,10 @@ chttp_response_header(struct chttp_response *resp, const char *fmt, ...);
 int
 chttp_response_contenttype(struct chttp_response *resp, const char *type,
         const char *charset);
+
+
+int
+chttp_response_write(struct chttp_response *resp, const char *fmt, ...);
 
 
 const char *

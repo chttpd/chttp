@@ -24,15 +24,16 @@
 #include "chttp.h"
 
 
-#define store_avail(lb) ((lb)->size - (lb)->len)
-
-
 void
 store_init(struct chttp_store *lb, char *backend, size_t size);
 
 
+void *
+store_allocate(struct chttp_store *lb, size_t size);
+
+
 const char *
-store_allocate(struct chttp_store *lb, const char *src);
+store_one(struct chttp_store *lb, const char *src);
 
 
 int

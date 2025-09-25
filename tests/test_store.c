@@ -69,10 +69,10 @@ test_store() {
     eqint(0, b.len);
     eqptr(backend, b.backend);
 
-    eqptr(backend, store_allocate(&b, "foo bar"));
+    eqptr(backend, store_one(&b, "foo bar"));
     eqint(8, b.len);
 
-    eqptr(backend + 8, store_allocate(&b, "baz"));
+    eqptr(backend + 8, store_one(&b, "baz"));
     eqint(12, b.len);
 }
 

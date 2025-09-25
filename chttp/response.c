@@ -49,7 +49,7 @@ chttp_response_start(struct chttp_response *resp, chttp_status_t status,
         return -1;
     }
 
-    resp->text = store_allocate(&resp->store, txt);
+    resp->text = store_one(&resp->store, txt);
     if (resp->text == NULL) {
         return -1;
     }
@@ -74,6 +74,7 @@ chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
                 resp->contentlength);
     }
 
+    /* content/mime type */
     if (resp->contenttype) {
         bytes += sprintf(buff + bytes, "Content-Type: %s", resp->contenttype);
         if (resp->charset) {
@@ -82,11 +83,23 @@ chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
         bytes += sprintf(buff + bytes, "\r\n");
     }
 
+    /* headers */
     for (i = 0; i < resp->headerscount; i++) {
         bytes += sprintf(buff + bytes, "%s\r\n", resp->headers[i]);
     }
 
+    /* close the http head */
     bytes += sprintf(buff + bytes, "\r\n");
+
+    /* content */
+    if (resp->contentlength > 0) {
+        if (resp->content == NULL) {
+            return -1;
+        }
+        strncpy(buff + bytes, resp->content, resp->contentlength);
+        bytes += resp->contentlength;
+    }
+
     return bytes;
 }
 
@@ -102,7 +115,7 @@ chttp_response_header(struct chttp_response *resp, const char *fmt, ...) {
     vsnprintf(buff, sizeof(buff), fmt, args);
     va_end(args);
 
-    h = store_allocate(&resp->store, buff);
+    h = store_one(&resp->store, buff);
     resp->headers[resp->headerscount++] = h;
     return 0;
 }
@@ -114,14 +127,14 @@ chttp_response_contenttype(struct chttp_response *resp, const char *type,
     const char *ct;
     const char *cs;
 
-    ct = store_allocate(&resp->store, type);
+    ct = store_one(&resp->store, type);
     if (ct == NULL) {
         return -1;
     }
 
     resp->contenttype = ct;
     if (charset) {
-        cs = store_allocate(&resp->store, charset);
+        cs = store_one(&resp->store, charset);
         if (cs == NULL) {
             return -1;
         }
@@ -129,4 +142,27 @@ chttp_response_contenttype(struct chttp_response *resp, const char *type,
     }
 
     return 0;
+}
+
+
+int
+chttp_response_write(struct chttp_response *resp, const char *fmt, ...) {
+    va_list args;
+    int bytes;
+    size_t maxlen;
+
+    if (resp->content == NULL) {
+        resp->contentmax = store_avail(&resp->store);
+        resp->content = store_allocate(&resp->store, resp->contentmax);
+        resp->contentlength = 0;
+    }
+
+    maxlen = resp->contentmax - resp->contentlength;
+
+    va_start(args, fmt);
+    bytes = vsnprintf(resp->content + resp->contentlength, maxlen, fmt, args);
+    va_end(args);
+
+    resp->contentlength += bytes;
+    return bytes;
 }

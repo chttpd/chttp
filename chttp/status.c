@@ -19,6 +19,9 @@
 /* local public */
 #include "chttp.h"
 
+/* local private */
+#include "status.h"
+
 
 static const char * _statuses[] = {
     [200] = "Ok",

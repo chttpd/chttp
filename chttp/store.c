@@ -29,14 +29,23 @@
 void
 store_init(struct chttp_store *lb, char *backend, size_t size) {
     lb->backend = backend;
-    // TODO: delete size or check it on allocation
     lb->size = size;
     lb->len = 0;
 }
 
 
+void *
+store_allocate(struct chttp_store *lb, size_t size) {
+    size_t tmp;
+
+    tmp = lb->len;
+    lb->len += size;
+    return lb->backend + tmp;
+}
+
+
 const char *
-store_allocate(struct chttp_store *lb, const char *str) {
+store_one(struct chttp_store *lb, const char *str) {
     char *start;
     char *end;
     int len;
@@ -66,7 +75,7 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
     const char *o;
 
     for (i = 0; i < count; i++) {
-        o = store_allocate(lb, src[i]);
+        o = store_one(lb, src[i]);
         *dst[i] = o? o: NULL;
     }
 

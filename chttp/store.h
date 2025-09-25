@@ -40,4 +40,9 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
         const char *src[]);
 
 
+int
+store_ifci(struct chttp_store *lb, const char **dst, char *in,
+        const char *kw);
+
+
 #endif  // CHTTP_STORE_H_

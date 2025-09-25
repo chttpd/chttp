@@ -72,3 +72,21 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
 
     return 0;
 }
+
+
+int
+store_ifci(struct chttp_store *lb, const char **dst, char *in,
+        const char *kw) {
+    int kwlen = strlen(kw);
+
+    if (kwlen == 0) {
+        return -1;
+    }
+
+    if (strcasestr(in, kw) == NULL) {
+        return 0;
+    }
+
+    *dst = strtrim(in + kwlen, NULL);
+    return 1;
+}

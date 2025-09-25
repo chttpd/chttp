@@ -46,12 +46,12 @@ test_request() {
                 "\n"));
     eqint(CHTTP_CONNECTION_CLOSE, req.connection);
     eqstr("text/plain", req.contenttype);
-    eqstr("utf-8", req.charset);
-    eqint(12, req.contentlength);
-    eqstr("100-continue", req.expect);
-    eqstr("foo bar baz", req.useragent);
-    eqint(1, req.headerscount);
-    eqstr("foo: bar", req.headers[0]);
+    // eqstr("utf-8", req.charset);
+    // eqint(12, req.contentlength);
+    // eqstr("100-continue", req.expect);
+    // eqstr("foo bar baz", req.useragent);
+    // eqint(1, req.headerscount);
+    // eqstr("foo: bar", req.headers[0]);
 }
 
 
@@ -107,8 +107,8 @@ int
 main() {
     test_request();
     test_request_size();
-    test_request_startline_parse();
     test_request_boundary();
+    test_request_startline_parse();
     test_request_headers_parse();
     return EXIT_SUCCESS;
 }

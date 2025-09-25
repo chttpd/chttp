@@ -30,7 +30,7 @@
 
 
 static int
-_contenttype_parse(char *in, const char **ctype, const char **charset) {
+_contenttype_parse(struct chttp_request *req, char *in) {
     char *tokens[2];
 
     switch (strtokenize(in, ";", 2, tokens)) {
@@ -38,16 +38,15 @@ _contenttype_parse(char *in, const char **ctype, const char **charset) {
             if (strcasestr(tokens[1], "charset=") == tokens[1]) {
                 tokens[1] += 8;
             }
-            *charset = tokens[1];
             break;
         case 1:
-            *charset = NULL;
             break;
         default:
             return -1;
     }
 
-    *ctype = tokens[0];
+    return store_all(&req->store, 2, (const char **[]) {
+            &req->contenttype, &req->charset}, (const char **)tokens);
     return 0;
 }
 
@@ -95,25 +94,26 @@ _startline_parse(struct chttp_request *req, char *line) {
 static int
 _header_known(struct chttp_request *req, char *header) {
     char *tmp;
+    int ret;
 
     if (strcasestr(header, "content-length:") == header) {
         req->contentlength = atoi(strtrim(header + 15, NULL));
         return 1;
     }
 
-    if (strcasestr(header, "user-agent:") == header) {
-        req->useragent = strtrim(header + 11, NULL);
-        return 1;
+    ret = store_ifci(&req->store, &req->useragent, header, "user-agent:");
+    if (ret) {
+        return ret;
     }
 
-    if (strcasestr(header, "expect:") == header) {
-        req->expect = strtrim(header + 7, NULL);
-        return 1;
+    ret = store_ifci(&req->store, &req->expect, header, "expect:");
+    if (ret) {
+        return ret;
     }
 
     if (strcasestr(header, "content-type:") == header) {
         tmp = strtrim(header + 13, NULL);
-        _contenttype_parse(tmp, &req->contenttype, &req->charset);
+        _contenttype_parse(req, tmp);
         return 1;
     }
 

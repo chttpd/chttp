@@ -99,4 +99,8 @@ int
 chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len);
 
 
+int
+chttp_response_header(struct chttp_response *resp, const char *fmt, ...);
+
+
 #endif  // INCLUDE_CHTTP_H_IN_

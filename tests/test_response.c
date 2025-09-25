@@ -36,10 +36,13 @@ test_response() {
 
     chttp_response_start(&resp, 200, "Ok");
     contentlen = chttp_response_tobuff(&resp, buff, &bufflen);
-    eqint(17, contentlen);
-    eqstr("HTTP/1.1 200 Ok\r\n", buff);
+    eqint(19, contentlen);
+    eqstr("HTTP/1.1 200 Ok\r\n\r\n", buff);
 
-    // chttp_response_header(&resp, "foo = %s", "bar");
+    chttp_response_header(&resp, "foo = %s", "bar");
+    contentlen = chttp_response_tobuff(&resp, buff, &bufflen);
+    eqint(30, contentlen);
+    eqstr("HTTP/1.1 200 Ok\r\nfoo = bar\r\n\r\n", buff);
 }
 
 

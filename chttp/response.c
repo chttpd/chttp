@@ -18,6 +18,7 @@
  */
 /* standard */
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 
 /* local private */
@@ -35,20 +36,46 @@ int
 chttp_response_start(struct chttp_response *resp, int status, char *text) {
     memset(resp, 0, sizeof(struct chttp_response));
     store_init(&resp->store, resp->storebuff, CHTTP_RESPONSE_STORE_BUFFSIZE);
-    resp->status = status;
-    resp->text = text;
-    resp->protocol = _proto;
     resp->text = store_allocate(&resp->store, text);
+    if (resp->text == NULL) {
+        return -1;
+    }
+
+    resp->protocol = _proto;
+    resp->status = status;
     return 0;
 }
 
 
 int
 chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
+    int i;
     int bytes = 0;
 
     bytes += sprintf(buff, "%s %d %s\r\n", resp->protocol, resp->status,
             resp->text);
 
+    for (i = 0; i < resp->headerscount; i++) {
+        bytes += sprintf(buff + bytes, "%s\r\n", resp->headers[i]);
+    }
+
+    bytes += sprintf(buff + bytes, "\r\n");
     return bytes;
+}
+
+
+int
+chttp_response_header(struct chttp_response *resp, const char *fmt, ...) {
+    va_list args;
+    const char *h;
+    // TODO: config
+    char buff[1024];
+
+    va_start(args, fmt);
+    vsnprintf(buff, sizeof(buff), fmt, args);
+    va_end(args);
+
+    h = store_allocate(&resp->store, buff);
+    resp->headers[resp->headerscount++] = h;
+    return 0;
 }

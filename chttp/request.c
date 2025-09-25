@@ -30,6 +30,29 @@
 
 
 static int
+_contenttype_parse(char *in, const char **ctype, const char **charset) {
+    char *tokens[2];
+
+    switch (strtokenize(in, ";", 2, tokens)) {
+        case 2:
+            if (strcasestr(tokens[1], "charset=") == tokens[1]) {
+                tokens[1] += 8;
+            }
+            *charset = tokens[1];
+            break;
+        case 1:
+            *charset = NULL;
+            break;
+        default:
+            return -1;
+    }
+
+    *ctype = tokens[0];
+    return 0;
+}
+
+
+static int
 _pathquery_split(char *uri, char **path, char **query) {
     char *tokens[2];
 
@@ -69,26 +92,88 @@ _startline_parse(struct chttp_request *req, char *line) {
 }
 
 
+static int
+_header_known(struct chttp_request *req, char *header) {
+    char *tmp;
+
+    if (strcasestr(header, "content-length:") == header) {
+        req->contentlength = atoi(strtrim(header + 15, NULL));
+        return 1;
+    }
+
+    if (strcasestr(header, "user-agent:") == header) {
+        req->useragent = strtrim(header + 11, NULL);
+        return 1;
+    }
+
+    if (strcasestr(header, "expect:") == header) {
+        req->expect = strtrim(header + 7, NULL);
+        return 1;
+    }
+
+    if (strcasestr(header, "content-type:") == header) {
+        tmp = strtrim(header + 13, NULL);
+        _contenttype_parse(tmp, &req->contenttype, &req->charset);
+        return 1;
+    }
+
+    if (strcasestr(header, "connection:") == header) {
+        tmp = strtrim(header + 11, NULL);
+        if (strcasecmp("close", tmp) == 0) {
+            req->connection = CHTTP_CONNECTION_CLOSE;
+        }
+        else if (strcasecmp("keep-alive", tmp) == 0) {
+            req->connection = CHTTP_CONNECTION_KEEPALIVE;
+        }
+        else {
+            return -1;
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
+
 static httpstatus_t
 _headers_parse(struct chttp_request *req, char *headers) {
+    int ret;
     int i;
-    int count;
+    int count = 0;
+    char *token;
+    char *saveptr = NULL;
     char *hdrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
     const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
 
-    count = strtokenize(headers, "\n", CONFIG_CHTTP_REQUEST_HEADERSMAX, hdrs);
-    if (count == -1) {
-        /* extra token found */
-        return 400;
-    }
+    for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
+        token = strtoktrim(i? NULL: headers, "\n", &saveptr);
+        if (token == NULL) {
+            break;
+        }
 
-    if (count == -2) {
-        /* zero length heder found */
-        return 431;
+        if (!token[0]) {
+            /* zero length header found */
+            return 431;
+        }
+
+        ret = _header_known(req, token);
+        if (ret == -1) {
+            return 400;
+        }
+
+        if (ret > 0) {
+            continue;
+        }
+
+        hdrs[count++] = token;
     }
 
     if (count == 0) {
         return 0;
+    }
+
+    if (saveptr[0]) {
+        return 400;
     }
 
     for (i = 0; i < count; i++) {

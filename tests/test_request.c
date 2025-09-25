@@ -30,14 +30,40 @@
 
 
 void
+test_request() {
+    struct chttp_request req;
+
+    eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
+    eqint(0, req.contentlength);
+
+    eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n"
+                "connection: close\n"
+                "content-type: text/plain; charset=utf-8\n"
+                "content-length: 12\n"
+                "expect: 100-continue\n"
+                "user-agent: foo bar baz\n"
+                "foo: bar\n"
+                "\n"));
+    eqint(CHTTP_CONNECTION_CLOSE, req.connection);
+    eqstr("text/plain", req.contenttype);
+    eqstr("utf-8", req.charset);
+    eqint(12, req.contentlength);
+    eqstr("100-continue", req.expect);
+    eqstr("foo bar baz", req.useragent);
+    eqint(1, req.headerscount);
+    eqstr("foo: bar", req.headers[0]);
+}
+
+
+void
 test_request_boundary() {
     struct chttp_request req;
 
-    eqint(400, chttp_request_fromstring(&req,
+    eqint(431, chttp_request_fromstring(&req,
                 "GET / HTTP/1.1\nfoo=bar\n\n\n"));
-    eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n\r\n\r\n"));
+    eqint(431, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n\r\n\r\n"));
+    eqint(431, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n\n"));
     eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n"));
-    eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n\n"));
     eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1"));
     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
 }
@@ -46,7 +72,6 @@ test_request_boundary() {
 void
 test_request_startline_parse() {
     struct chttp_request req;
-    memset(&req, 0, sizeof(req));
 
     eqint(0, chttp_request_fromstring(&req,
                 "GET /foo?bar=baz%%20qux HTTP/1.1\r\n\r\n"));
@@ -60,7 +85,6 @@ test_request_startline_parse() {
 void
 test_request_headers_parse() {
     struct chttp_request req;
-    memset(&req, 0, sizeof(req));
 
     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
     eqint(0, req.headerscount);
@@ -81,6 +105,7 @@ test_request_size() {
 
 int
 main() {
+    test_request();
     test_request_size();
     test_request_startline_parse();
     test_request_boundary();

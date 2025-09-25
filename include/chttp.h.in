@@ -29,6 +29,13 @@
 #cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
 
 
+enum chttp_connection {
+    CHTTP_CONNECTION_NOTSPECIFIED = 0,
+    CHTTP_CONNECTION_CLOSE = 1,
+    CHTTP_CONNECTION_KEEPALIVE = 2,
+};
+
+
 typedef int httpstatus_t;
 struct chttp_store {
     char *backend;
@@ -41,6 +48,7 @@ struct chttp_responseview {
     int status;
     const char *text;
     const char *protocol;
+    size_t contentlength;
 
     unsigned short headerscount;
     const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
@@ -64,6 +72,12 @@ struct chttp_requestview {
     const char *path;
     const char *query;
     const char *protocol;
+    const char *contenttype;
+    const char *charset;
+    const char *expect;
+    const char *useragent;
+    enum chttp_connection connection;
+    size_t contentlength;
 
     unsigned short headerscount;
     const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];

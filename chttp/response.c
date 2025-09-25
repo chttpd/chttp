@@ -35,6 +35,8 @@ static const char *_proto = "HTTP/1.1";
 int
 chttp_response_start(struct chttp_response *resp, int status, char *text) {
     memset(resp, 0, sizeof(struct chttp_response));
+    resp->contentlength = -1;
+
     store_init(&resp->store, resp->storebuff, CHTTP_RESPONSE_STORE_BUFFSIZE);
     resp->text = store_allocate(&resp->store, text);
     if (resp->text == NULL) {
@@ -54,6 +56,20 @@ chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
 
     bytes += sprintf(buff, "%s %d %s\r\n", resp->protocol, resp->status,
             resp->text);
+
+    /* known headers */
+    if (resp->contentlength > -1) {
+        bytes += sprintf(buff + bytes, "Content-Length: %ld\r\n",
+                resp->contentlength);
+    }
+
+    if (resp->contenttype) {
+        bytes += sprintf(buff + bytes, "Content-Type: %s", resp->contenttype);
+        if (resp->charset) {
+            bytes += sprintf(buff + bytes, "; charset=%s", resp->charset);
+        }
+        bytes += sprintf(buff + bytes, "\r\n");
+    }
 
     for (i = 0; i < resp->headerscount; i++) {
         bytes += sprintf(buff + bytes, "%s\r\n", resp->headers[i]);
@@ -77,5 +93,29 @@ chttp_response_header(struct chttp_response *resp, const char *fmt, ...) {
 
     h = store_allocate(&resp->store, buff);
     resp->headers[resp->headerscount++] = h;
+    return 0;
+}
+
+
+int
+chttp_response_contenttype(struct chttp_response *resp, const char *type,
+        const char *charset) {
+    const char *ct;
+    const char *cs;
+
+    ct = store_allocate(&resp->store, type);
+    if (ct == NULL) {
+        return -1;
+    }
+
+    resp->contenttype = ct;
+    if (charset) {
+        cs = store_allocate(&resp->store, charset);
+        if (cs == NULL) {
+            return -1;
+        }
+        resp->charset = cs;
+    }
+
     return 0;
 }

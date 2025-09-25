@@ -32,17 +32,22 @@ test_response() {
     struct chttp_response resp;
     char buff[1024];
     int bufflen = 1024;
-    int contentlen;
+    int headerlen;
 
-    chttp_response_start(&resp, 200, "Ok");
-    contentlen = chttp_response_tobuff(&resp, buff, &bufflen);
-    eqint(19, contentlen);
+    eqint(0, chttp_response_start(&resp, 200, "Ok"));
+    headerlen = chttp_response_tobuff(&resp, buff, &bufflen);
+    eqint(19, headerlen);
     eqstr("HTTP/1.1 200 Ok\r\n\r\n", buff);
 
-    chttp_response_header(&resp, "foo = %s", "bar");
-    contentlen = chttp_response_tobuff(&resp, buff, &bufflen);
-    eqint(30, contentlen);
-    eqstr("HTTP/1.1 200 Ok\r\nfoo = bar\r\n\r\n", buff);
+    eqint(0, chttp_response_header(&resp, "foo = %s", "bar"));
+    resp.contentlength = 1024;
+    eqint(0, chttp_response_contenttype(&resp, "text/plain", "utf-8"));
+    headerlen = chttp_response_tobuff(&resp, buff, &bufflen);
+    eqint(93, headerlen);
+    eqstr("HTTP/1.1 200 Ok\r\n"
+            "Content-Length: 1024\r\n"
+            "Content-Type: text/plain; charset=utf-8\r\n"
+            "foo = bar\r\n\r\n", buff);
 }
 
 

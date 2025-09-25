@@ -30,28 +30,42 @@
 
 
 static int
+_pathquery_split(char *uri, char **path, char **query) {
+    char *tokens[2];
+
+    switch (strtokenize(uri, "?", 2, tokens)) {
+        case 2:
+            uridecode(tokens[1]);
+            *query = tokens[1];
+            break;
+        case 1:
+            *query = NULL;
+            break;
+        default:
+            return -1;
+    }
+
+    *path = tokens[0];
+    return 0;
+}
+
+
+static int
 _startline_parse(struct chttp_request *req, char *line) {
-    char **tokens[4] = {&req->verb, &req->path, &req->protocol, &req->query};
+    char *tokens[4];
 
     /* verb/uri/protocol */
     if (strtokenize(line, " ", 3, tokens) != 3) {
         return -1;
     }
 
-    /* path/querystring */
-    switch (strtokenize(req->path, "?", 2, (char **[]){&req->path,
-                &req->query})) {
-        case 2:
-            uridecode(req->query);
-            break;
-        case 1:
-            req->query = NULL;
-            break;
-        default:
-            return -1;
+    if (_pathquery_split(tokens[1], &tokens[1], &tokens[3])) {
+        return -1;
     }
 
-    return store_replaceall(&req->store, 4, tokens);
+    return store_all(&req->store, 4, (const char **[]) {
+            &req->verb, &req->path, &req->protocol, &req->query
+        }, (const char **)tokens);
 }
 
 
@@ -59,13 +73,10 @@ static httpstatus_t
 _headers_parse(struct chttp_request *req, char *headers) {
     int i;
     int count;
-    char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    char *hdrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
 
-    for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
-        ptrs[i] = &req->headers[i];
-    }
-
-    count = strtokenize(headers, "\n", CONFIG_CHTTP_REQUEST_HEADERSMAX, ptrs);
+    count = strtokenize(headers, "\n", CONFIG_CHTTP_REQUEST_HEADERSMAX, hdrs);
     if (count == -1) {
         /* extra token found */
         return 400;
@@ -80,8 +91,12 @@ _headers_parse(struct chttp_request *req, char *headers) {
         return 0;
     }
 
+    for (i = 0; i < count; i++) {
+        ptrs[i] = &req->headers[i];
+    }
+
     /* apply the store functor to all pointers */
-    if (store_replaceall(&req->store, count, ptrs)) {
+    if (store_all(&req->store, count, ptrs, (const char **)hdrs)) {
         return 500;
     }
 

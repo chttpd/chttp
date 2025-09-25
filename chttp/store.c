@@ -35,8 +35,8 @@ store_init(struct chttp_store *lb, char *backend, size_t size) {
 }
 
 
-char *
-store_allocate(struct chttp_store *lb, char *str) {
+const char *
+store_allocate(struct chttp_store *lb, const char *str) {
     char *start;
     char *end;
     int len;
@@ -60,12 +60,15 @@ store_allocate(struct chttp_store *lb, char *str) {
 
 
 int
-store_replace(struct chttp_store *lb, char **ptr) {
-    return str_fmap(lb, (str_func_t)store_allocate, ptr);
-}
+store_all(struct chttp_store *lb, int count, const char **dst[],
+        const char *src[]) {
+    int i;
+    const char *o;
 
+    for (i = 0; i < count; i++) {
+        o = store_allocate(lb, src[i]);
+        *dst[i] = o? o: NULL;
+    }
 
-int
-store_replaceall(struct chttp_store *lb, int count, char **all[]) {
-    return str_fmapall(lb, (str_func_t)store_allocate, count, all);
+    return 0;
 }

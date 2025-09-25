@@ -52,14 +52,12 @@ test_strtoktrim() {
 static void
 test_strsplit() {
     char tmp[32];
-    char *first;
-    char *second;
-    char **out[2] = {&first, &second};
+    char *out[2];
 
     /* no delimiter inside input string */
     sprintf(tmp, "foobar");
     eqint(1, strtokenize(tmp, " ", 2, out));
-    eqstr("foobar", first);
+    eqstr("foobar", out[0]);
 
     /* null */
     eqint(-1, strtokenize(NULL, " ", 2, out));
@@ -70,26 +68,26 @@ test_strsplit() {
     /* extra delimiter */
     sprintf(tmp, "foo bar ");
     eqint(2, strtokenize(tmp, " ", 2, out));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 
     /* insufficient token */
     sprintf(tmp, "foo bar ");
     eqint(2, strtokenize(tmp, " ", 3, out));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 
     /* extra token */
     sprintf(tmp, "foo bar baz");
     eqint(-2, strtokenize(tmp, " ", 2, out));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 
     /* as expected */
     sprintf(tmp, "foo bar");
     eqint(2, strtokenize(tmp, " ", 2, out));
-    eqstr("foo", first);
-    eqstr("bar", second);
+    eqstr("foo", out[0]);
+    eqstr("bar", out[1]);
 }
 
 

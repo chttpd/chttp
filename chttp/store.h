@@ -31,16 +31,13 @@ void
 store_init(struct chttp_store *lb, char *backend, size_t size);
 
 
-char *
-store_allocate(struct chttp_store *lb, char *src);
+const char *
+store_allocate(struct chttp_store *lb, const char *src);
 
 
 int
-store_replace(struct chttp_store *lb, char **ptr);
-
-
-int
-store_replaceall(struct chttp_store *lb, int count, char **all[]);
+store_all(struct chttp_store *lb, int count, const char **dst[],
+        const char *src[]);
 
 
 #endif  // CHTTP_STORE_H_

@@ -33,7 +33,8 @@ void
 test_request_boundary() {
     struct chttp_request req;
 
-    eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\nfoo=bar\n\n\n"));
+    eqint(400, chttp_request_fromstring(&req,
+                "GET / HTTP/1.1\nfoo=bar\n\n\n"));
     eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n\r\n\r\n"));
     eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n"));
     eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n\n"));

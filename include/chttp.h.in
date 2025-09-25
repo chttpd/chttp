@@ -43,7 +43,7 @@ struct chttp_responseview {
     const char *protocol;
 
     unsigned short headerscount;
-    char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
 };
 
 
@@ -60,13 +60,13 @@ struct chttp_response {
 
 
 struct chttp_requestview {
-    char *verb;
-    char *path;
-    char *query;
-    char *protocol;
+    const char *verb;
+    const char *path;
+    const char *query;
+    const char *protocol;
 
     unsigned short headerscount;
-    char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
 };
 
 
@@ -83,7 +83,7 @@ struct chttp_request {
 
 
 httpstatus_t
-chttp_request_frombuffer(struct chttp_request *req, char *header, 
+chttp_request_frombuffer(struct chttp_request *req, char *header,
         size_t size);
 
 

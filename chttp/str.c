@@ -105,7 +105,7 @@ strtoktrim(char *str, const char *restrict delim, char **restrict saveptr) {
   *  0 or greater that represents number of token(s).
   */
 int
-strtokenize(char *str, const char *delim, int count, char **out[]) {
+strtokenize(char *str, const char *delim, int count, char *out[]) {
     int i;
     char *saveptr;
     char *token;
@@ -124,7 +124,7 @@ strtokenize(char *str, const char *delim, int count, char **out[]) {
             return -1;
         }
 
-        *out[i] = token;
+        out[i] = token;
     }
 
     if (saveptr[0]) {

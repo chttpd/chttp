@@ -27,7 +27,7 @@ typedef char *str_t;
 
 
 int
-strtokenize(char *str, const char *delim, int count, char **out[]);
+strtokenize(char *str, const char *delim, int count, char *out[]);
 
 
 char *

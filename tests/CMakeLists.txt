@@ -4,6 +4,7 @@ list(APPEND testrules
   str
   store
   request
+  response
 )
 
 

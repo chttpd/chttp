@@ -27,8 +27,6 @@
 #cmakedefine CONFIG_CHTTP_REQUEST_BUFFSIZE @CONFIG_CHTTP_REQUEST_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_RESPONSE_BUFFSIZE @CONFIG_CHTTP_RESPONSE_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
-#define CHTTP_REQUEST_SHAREDBUFF_SIZE \
-    (CONFIG_CHTTP_REQUEST_BUFFSIZE + CONFIG_CHTTP_RESPONSE_BUFFSIZE)
 
 
 typedef int httpstatus_t;
@@ -39,9 +37,29 @@ struct chttp_store {
 };
 
 
-struct chttp_request {
-    struct chttp_store buff;
+struct chttp_responseview {
+    int status;
+    const char *text;
+    const char *protocol;
 
+    unsigned short headerscount;
+    char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+};
+
+
+#define CHTTP_RESPONSE_STORE_BUFFSIZE \
+    (CONFIG_CHTTP_RESPONSE_BUFFSIZE - sizeof(struct chttp_responseview) \
+        - sizeof(struct chttp_store))
+
+
+struct chttp_response {
+    struct chttp_responseview;
+    struct chttp_store store;
+    char storebuff[CHTTP_RESPONSE_STORE_BUFFSIZE];
+};
+
+
+struct chttp_requestview {
     char *verb;
     char *path;
     char *query;
@@ -49,16 +67,36 @@ struct chttp_request {
 
     unsigned short headerscount;
     char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-    char sharedbuff[CHTTP_REQUEST_SHAREDBUFF_SIZE];
+};
+
+
+#define CHTTP_REQUEST_STORE_BUFFSIZE \
+    (CONFIG_CHTTP_REQUEST_BUFFSIZE - sizeof(struct chttp_requestview) \
+        - sizeof(struct chttp_store))
+
+
+struct chttp_request {
+    struct chttp_requestview;
+    struct chttp_store store;
+    char storebuff[CHTTP_REQUEST_STORE_BUFFSIZE];
 };
 
 
 httpstatus_t
-request_frombuffer(struct chttp_request *req, char *header, size_t size);
+chttp_request_frombuffer(struct chttp_request *req, char *header, 
+        size_t size);
 
 
 httpstatus_t
-request_fromstring(struct chttp_request *req, const char *fmt, ...);
+chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...);
+
+
+int
+chttp_response_start(struct chttp_response *resp, int status, char *text);
+
+
+int
+chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

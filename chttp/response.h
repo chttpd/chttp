@@ -1,0 +1,5 @@
+#ifndef CHTTP_RESPONSE_H_
+#define CHTTP_RESPONSE_H_
+
+
+#endif  // CHTTP_RESPONSE_H_

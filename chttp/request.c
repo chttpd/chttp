@@ -51,7 +51,7 @@ _startline_parse(struct chttp_request *req, char *line) {
             return -1;
     }
 
-    return store_replaceall(&req->buff, 4, tokens);
+    return store_replaceall(&req->store, 4, tokens);
 }
 
 
@@ -80,7 +80,8 @@ _headers_parse(struct chttp_request *req, char *headers) {
         return 0;
     }
 
-    if (store_replaceall(&req->buff, count, ptrs)) {
+    /* apply the store functor to all pointers */
+    if (store_replaceall(&req->store, count, ptrs)) {
         return 500;
     }
 
@@ -90,7 +91,8 @@ _headers_parse(struct chttp_request *req, char *headers) {
 
 
 httpstatus_t
-request_frombuffer(struct chttp_request *req, char *header, size_t size) {
+chttp_request_frombuffer(struct chttp_request *req, char *header,
+        size_t size) {
     char *line;
     char *saveptr;
 
@@ -115,8 +117,7 @@ request_frombuffer(struct chttp_request *req, char *header, size_t size) {
     header[size] = 0;
 
     memset(req, 0, sizeof(struct chttp_request));
-    store_init(&req->buff, req->sharedbuff,
-            CHTTP_REQUEST_SHAREDBUFF_SIZE);
+    store_init(&req->store, req->storebuff, CHTTP_REQUEST_STORE_BUFFSIZE);
 
     /* startline */
     line = strtok_r(header, "\n", &saveptr);
@@ -133,7 +134,7 @@ request_frombuffer(struct chttp_request *req, char *header, size_t size) {
 
 
 httpstatus_t
-request_fromstring(struct chttp_request *req, const char *fmt, ...) {
+chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...) {
     size_t bytes;
     va_list args;
     char tmp[CONFIG_CHTTP_REQUEST_BUFFSIZE];
@@ -146,5 +147,5 @@ request_fromstring(struct chttp_request *req, const char *fmt, ...) {
         return -1;
     }
 
-    return request_frombuffer(req, tmp, bytes);
+    return chttp_request_frombuffer(req, tmp, bytes);
 }

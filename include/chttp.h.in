@@ -110,7 +110,7 @@ chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...);
 
 int
 chttp_response_start(struct chttp_response *resp, chttp_status_t status, 
-        char *text);
+        const char *text);
 
 
 int

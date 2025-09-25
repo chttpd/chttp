@@ -34,7 +34,7 @@ static const char *_proto = "HTTP/1.1";
 
 int
 chttp_response_start(struct chttp_response *resp, chttp_status_t status,
-        char *text) {
+        const char *text) {
     const char *txt = text;
     memset(resp, 0, sizeof(struct chttp_response));
     resp->contentlength = -1;

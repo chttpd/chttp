@@ -3,6 +3,7 @@ list(APPEND testrules
   functor
   str
   store
+  status
   request
   response
 )

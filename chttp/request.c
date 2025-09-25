@@ -135,7 +135,7 @@ _header_known(struct chttp_request *req, char *header) {
 }
 
 
-static httpstatus_t
+static chttp_status_t
 _headers_parse(struct chttp_request *req, char *headers) {
     int ret;
     int i;
@@ -190,7 +190,7 @@ _headers_parse(struct chttp_request *req, char *headers) {
 }
 
 
-httpstatus_t
+chttp_status_t
 chttp_request_frombuffer(struct chttp_request *req, char *header,
         size_t size) {
     char *line;
@@ -233,7 +233,7 @@ chttp_request_frombuffer(struct chttp_request *req, char *header,
 }
 
 
-httpstatus_t
+chttp_status_t
 chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...) {
     size_t bytes;
     va_list args;

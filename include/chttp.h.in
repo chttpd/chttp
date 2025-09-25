@@ -37,7 +37,7 @@ enum chttp_connection {
 };
 
 
-typedef int httpstatus_t;
+typedef int chttp_status_t;
 struct chttp_store {
     char *backend;
     size_t size;
@@ -99,17 +99,18 @@ struct chttp_request {
 };
 
 
-httpstatus_t
+chttp_status_t
 chttp_request_frombuffer(struct chttp_request *req, char *header,
         size_t size);
 
 
-httpstatus_t
+chttp_status_t
 chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...);
 
 
 int
-chttp_response_start(struct chttp_response *resp, int status, char *text);
+chttp_response_start(struct chttp_response *resp, chttp_status_t status, 
+        char *text);
 
 
 int
@@ -123,6 +124,10 @@ chttp_response_header(struct chttp_response *resp, const char *fmt, ...);
 int
 chttp_response_contenttype(struct chttp_response *resp, const char *type,
         const char *charset);
+
+
+const char *
+chttp_status_text(chttp_status_t status);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

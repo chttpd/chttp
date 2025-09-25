@@ -33,12 +33,23 @@ static const char *_proto = "HTTP/1.1";
 
 
 int
-chttp_response_start(struct chttp_response *resp, int status, char *text) {
+chttp_response_start(struct chttp_response *resp, chttp_status_t status,
+        char *text) {
+    const char *txt = text;
     memset(resp, 0, sizeof(struct chttp_response));
     resp->contentlength = -1;
 
     store_init(&resp->store, resp->storebuff, CHTTP_RESPONSE_STORE_BUFFSIZE);
-    resp->text = store_allocate(&resp->store, text);
+
+    if (txt == NULL) {
+        txt = chttp_status_text(status);
+    }
+
+    if (txt == NULL) {
+        return -1;
+    }
+
+    resp->text = store_allocate(&resp->store, txt);
     if (resp->text == NULL) {
         return -1;
     }

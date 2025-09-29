@@ -61,50 +61,6 @@ chttp_response_start(struct chttp_response *resp, chttp_status_t status,
 
 
 int
-chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
-    int i;
-    int bytes = 0;
-
-    bytes += sprintf(buff, "%s %d %s\r\n", resp->protocol, resp->status,
-            resp->text);
-
-    /* known headers */
-    if (resp->contentlength > -1) {
-        bytes += sprintf(buff + bytes, "Content-Length: %ld\r\n",
-                resp->contentlength);
-    }
-
-    /* content/mime type */
-    if (resp->contenttype) {
-        bytes += sprintf(buff + bytes, "Content-Type: %s", resp->contenttype);
-        if (resp->charset) {
-            bytes += sprintf(buff + bytes, "; charset=%s", resp->charset);
-        }
-        bytes += sprintf(buff + bytes, "\r\n");
-    }
-
-    /* headers */
-    for (i = 0; i < resp->headerscount; i++) {
-        bytes += sprintf(buff + bytes, "%s\r\n", resp->headers[i]);
-    }
-
-    /* close the http head */
-    bytes += sprintf(buff + bytes, "\r\n");
-
-    /* content */
-    if (resp->contentlength > 0) {
-        if (resp->content == NULL) {
-            return -1;
-        }
-        strncpy(buff + bytes, resp->content, resp->contentlength);
-        bytes += resp->contentlength;
-    }
-
-    return bytes;
-}
-
-
-int
 chttp_response_header(struct chttp_response *resp, const char *fmt, ...) {
     va_list args;
     const char *h;
@@ -166,3 +122,49 @@ chttp_response_write(struct chttp_response *resp, const char *fmt, ...) {
     resp->contentlength += bytes;
     return bytes;
 }
+
+
+int
+chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
+    int i;
+    int bytes = 0;
+
+    bytes += sprintf(buff, "%s %d %s\r\n", resp->protocol, resp->status,
+            resp->text);
+
+    /* known headers */
+    if (resp->contentlength > -1) {
+        bytes += sprintf(buff + bytes, "Content-Length: %ld\r\n",
+                resp->contentlength);
+    }
+
+    /* content/mime type */
+    if (resp->contenttype) {
+        bytes += sprintf(buff + bytes, "Content-Type: %s", resp->contenttype);
+        if (resp->charset) {
+            bytes += sprintf(buff + bytes, "; charset=%s", resp->charset);
+        }
+        bytes += sprintf(buff + bytes, "\r\n");
+    }
+
+    /* headers */
+    for (i = 0; i < resp->headerscount; i++) {
+        bytes += sprintf(buff + bytes, "%s\r\n", resp->headers[i]);
+    }
+
+    /* close the http head */
+    bytes += sprintf(buff + bytes, "\r\n");
+
+    /* content */
+    if (resp->contentlength > 0) {
+        if (resp->content == NULL) {
+            return -1;
+        }
+        strncpy(buff + bytes, resp->content, resp->contentlength);
+        bytes += resp->contentlength;
+    }
+
+    return bytes;
+}
+
+

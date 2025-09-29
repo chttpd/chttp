@@ -28,8 +28,6 @@
 #cmakedefine CONFIG_CHTTP_REQUEST_BUFFSIZE @CONFIG_CHTTP_REQUEST_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_RESPONSE_BUFFSIZE @CONFIG_CHTTP_RESPONSE_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
-// #cmakedefine CONFIG_CHTTP_RESPONSE_CONTENTMAX \
-//     @CONFIG_CHTTP_RESPONSE_CONTENTMAX@
 
 
 typedef int chttp_status_t;
@@ -85,6 +83,7 @@ struct chttp_requestview {
     const char *expect;
     const char *useragent;
     enum chttp_connection connection;
+    // FIXME: choose a better name
     size_t contentlength;
 
     unsigned short headerscount;

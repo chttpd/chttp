@@ -6,6 +6,7 @@ list(APPEND testrules
   status
   request
   response
+  buffprinter
 )
 
 

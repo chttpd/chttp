@@ -16,31 +16,23 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-/* thirdparty */
-#include <cutest.h>
-
-/* local private */
-#include "buffprinter.h"
+#ifndef CHTTP_BUFFWRITER_H_
+#define CHTTP_BUFFWRITER_H_
 
 
-void
-test_printer() {
-    char buff[16];
-    struct buffprinter w = {buff, sizeof(buff), 0};
-
-    eqint(8, buffprint(&w, "foo %s", "bar"));
-    eqint(7, w.used);
-
-    eqint(4, buffprint(&w, " baz"));
-    eqint(11, w.used);
-
-    eqint(-1, buffprint(&w, " thud "));
-    eqint(11, w.used);
-}
+struct buffwriter {
+    char *buff;
+    size_t size;
+    size_t used;
+};
 
 
-int
-main() {
-    test_printer();
-    return EXIT_SUCCESS;
-}
+ssize_t
+buffwriter_printf(struct buffwriter *p, const char *restrict fmt, ...);
+
+
+ssize_t
+buffwriter_write(struct buffwriter *p, const char *data, size_t length);
+
+
+#endif  // CHTTP_BUFFWRITER_H_

@@ -166,5 +166,3 @@ chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
 
     return bytes;
 }
-
-

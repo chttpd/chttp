@@ -19,16 +19,20 @@
 /* standard */
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 /* local private */
-#include "buffprinter.h"
+#include "buffwriter.h"
+
+
+#define AVAIL(p) (((p)->size - 1) - p->used)
 
 
 ssize_t
-buffprint(struct buffprinter *p, const char *restrict fmt, ...) {
+buffwriter_printf(struct buffwriter *p, const char *restrict fmt, ...) {
     va_list args;
     int ret;
-    size_t avail = (p->size - 1) - p->used;
+    size_t avail = AVAIL(p);
 
     va_start(args, fmt);
     ret = vsnprintf(p->buff + p->used, avail, fmt, args);
@@ -40,5 +44,19 @@ buffprint(struct buffprinter *p, const char *restrict fmt, ...) {
     }
 
     p->used += ret;
+    return (p->size - 1) - p->used;
+}
+
+
+ssize_t
+buffwriter_write(struct buffwriter *p, const char *data, size_t length) {
+    size_t avail = AVAIL(p);
+
+    if (avail < length) {
+        return -1;
+    }
+
+    strncpy(p->buff + p->used, data, length);
+    p->used += length;
     return (p->size - 1) - p->used;
 }

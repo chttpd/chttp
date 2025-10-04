@@ -56,7 +56,8 @@ buffwriter_write(struct buffwriter *p, const char *data, size_t length) {
         return -1;
     }
 
-    strncpy(p->buff + p->used, data, length);
+    memcpy(p->buff + p->used, data, length);
     p->used += length;
+    p->buff[p->used] = 0;
     return (p->size - 1) - p->used;
 }

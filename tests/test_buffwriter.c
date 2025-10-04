@@ -27,11 +27,14 @@ void
 test_buffwriter_printf() {
     char buff[16];
     struct buffwriter w = {buff, sizeof(buff), 0};
+    memset(buff, 1, sizeof(buff));
 
     eqint(8, buffwriter_printf(&w, "foo %s", "bar"));
+    eqint(0, buff[w.used]);
     eqint(7, w.used);
 
     eqint(4, buffwriter_printf(&w, " baz"));
+    eqint(0, buff[w.used]);
     eqint(11, w.used);
 
     eqint(-1, buffwriter_printf(&w, " thud"));
@@ -43,8 +46,10 @@ void
 test_buffwriter_write() {
     char buff[16];
     struct buffwriter w = {buff, sizeof(buff), 0};
+    memset(buff, 1, sizeof(buff));
 
     eqint(4, buffwriter_write(&w, "foo bar baz", 11));
+    eqint(0, buff[w.used]);
     eqint(11, w.used);
 
     eqint(-1, buffwriter_write(&w, " thud", 5));

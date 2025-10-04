@@ -24,6 +24,7 @@
 /* local private */
 #include "store.h"
 #include "response.h"
+#include "buffwriter.h"
 
 /* local public */
 #include "chttp.h"
@@ -127,42 +128,59 @@ chttp_response_write(struct chttp_response *resp, const char *fmt, ...) {
 int
 chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
     int i;
-    int bytes = 0;
+    struct buffwriter p = {buff, *len, 0};
 
-    bytes += sprintf(buff, "%s %d %s\r\n", resp->protocol, resp->status,
-            resp->text);
+    if (buffwriter_printf(&p, "%s %d %s\r\n", resp->protocol, resp->status,
+            resp->text) == -1) {
+        return -1;
+    }
 
     /* known headers */
-    if (resp->contentlength > -1) {
-        bytes += sprintf(buff + bytes, "Content-Length: %ld\r\n",
-                resp->contentlength);
+    if ((resp->contentlength > -1) && (buffwriter_printf(&p,
+                    "Content-Length: %ld\r\n", resp->contentlength) == -1)) {
+        return -1;
     }
 
     /* content/mime type */
     if (resp->contenttype) {
-        bytes += sprintf(buff + bytes, "Content-Type: %s", resp->contenttype);
-        if (resp->charset) {
-            bytes += sprintf(buff + bytes, "; charset=%s", resp->charset);
+        if (buffwriter_printf(&p, "Content-Type: %s",
+                    resp->contenttype) == -1) {
+            return -1;
         }
-        bytes += sprintf(buff + bytes, "\r\n");
+
+        if ((resp->charset) && (buffwriter_printf(&p, "; charset=%s",
+                        resp->charset) == -1)) {
+            return -1;
+        }
+
+        if (buffwriter_printf(&p, "\r\n") == -1) {
+            return -1;
+        }
     }
 
     /* headers */
     for (i = 0; i < resp->headerscount; i++) {
-        bytes += sprintf(buff + bytes, "%s\r\n", resp->headers[i]);
+        if (buffwriter_printf(&p, "%s\r\n", resp->headers[i]) == -1) {
+            return -1;
+        }
     }
 
     /* close the http head */
-    bytes += sprintf(buff + bytes, "\r\n");
+    if (buffwriter_write(&p, "\r\n", 2) == -1) {
+        return -1;
+    }
 
     /* content */
     if (resp->contentlength > 0) {
         if (resp->content == NULL) {
             return -1;
         }
-        strncpy(buff + bytes, resp->content, resp->contentlength);
-        bytes += resp->contentlength;
+
+        if (buffwriter_write(&p, resp->content, resp->contentlength)  == -1) {
+            return -1;
+        }
     }
 
-    return bytes;
+    *len = p.used;
+    return 0;
 }

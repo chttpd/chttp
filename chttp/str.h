@@ -20,6 +20,10 @@
 #define CHTTP_STR_H_
 
 
+/* standard */
+#include <stdbool.h>
+
+
 #undef F
 typedef char *str_t;
 #define F str
@@ -36,6 +40,10 @@ str_trim(char *s, int *len);
 
 char *
 str_tokenize(char *str, const char *restrict delim, char **restrict saveptr);
+
+
+bool
+str_startswith(const char *restrict s, const char *restrict prefix);
 
 
 #endif  // CHTTP_STR_H_

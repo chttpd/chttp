@@ -27,7 +27,18 @@
 
 
 static void
-test_strtoktrim() {
+test_str_startswith() {
+    isfalse(str_startswith(NULL, "bar"));
+    isfalse(str_startswith("foo", NULL));
+    isfalse(str_startswith("foo", "bar"));
+    isfalse(str_startswith("fo", "foo"));
+    istrue(str_startswith("foo", "foo"));
+    istrue(str_startswith("foo bar", "foo"));
+}
+
+
+static void
+test_str_tokenize() {
     char *saveptr;
     char in[16];
 
@@ -50,7 +61,7 @@ test_strtoktrim() {
 
 
 static void
-test_strsplit() {
+test_str_tokenizeall() {
     char tmp[32];
     char *out[2];
 
@@ -92,7 +103,7 @@ test_strsplit() {
 
 
 static void
-test_strtrim() {
+test_str_trim() {
     char tmp[16];
     int len;
 
@@ -113,8 +124,9 @@ test_strtrim() {
 
 int
 main() {
-    test_strtoktrim();
-    test_strsplit();
-    test_strtrim();
+    test_str_startswith();
+    test_str_tokenize();
+    test_str_tokenizeall();
+    test_str_trim();
     return EXIT_SUCCESS;
 }

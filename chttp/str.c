@@ -133,3 +133,23 @@ str_tokenizeall(char *str, const char *delim, int count, char *out[]) {
 
     return i;
 }
+
+
+bool
+str_startswith(const char *restrict s, const char *restrict prefix) {
+    if ((!s) || (!prefix)) {
+        return false;
+    }
+
+    for(; *s;) {
+        if(tolower(*s++) != tolower(*prefix++)) {
+            return false;
+        }
+
+        if (!(*prefix)) {
+            return true;
+        }
+    }
+
+    return *s == *prefix;
+}

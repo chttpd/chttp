@@ -141,8 +141,8 @@ str_startswith(const char *restrict s, const char *restrict prefix) {
         return false;
     }
 
-    for(; *s;) {
-        if(tolower(*s++) != tolower(*prefix++)) {
+    for (; *s;) {
+        if (tolower(*s++) != tolower(*prefix++)) {
             return false;
         }
 

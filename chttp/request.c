@@ -33,7 +33,7 @@ static int
 _contenttype_parse(struct chttp_request *req, char *in) {
     char *tokens[2];
 
-    switch (strtokenize(in, ";", 2, tokens)) {
+    switch (str_tokenizeall(in, ";", 2, tokens)) {
         case 2:
             if (strcasestr(tokens[1], "charset=") == tokens[1]) {
                 tokens[1] += 8;
@@ -55,7 +55,7 @@ static int
 _pathquery_split(char *uri, char **path, char **query) {
     char *tokens[2];
 
-    switch (strtokenize(uri, "?", 2, tokens)) {
+    switch (str_tokenizeall(uri, "?", 2, tokens)) {
         case 2:
             uridecode(tokens[1]);
             *query = tokens[1];
@@ -77,7 +77,7 @@ _startline_parse(struct chttp_request *req, char *line) {
     char *tokens[4];
 
     /* verb/uri/protocol */
-    if (strtokenize(line, " ", 3, tokens) != 3) {
+    if (str_tokenizeall(line, " ", 3, tokens) != 3) {
         return -1;
     }
 
@@ -101,12 +101,14 @@ _header_known(struct chttp_request *req, char *header) {
         return 1;
     }
 
-    ret = store_ifci(&req->store, &req->useragent, header, "user-agent:");
+    ret = store_ifstartswith_ci(&req->store, &req->useragent, header,
+            "user-agent:");
     if (ret) {
         return ret;
     }
 
-    ret = store_ifci(&req->store, &req->expect, header, "expect:");
+    ret = store_ifstartswith_ci(&req->store, &req->expect, header,
+            "expect:");
     if (ret) {
         return ret;
     }
@@ -146,7 +148,7 @@ _headers_parse(struct chttp_request *req, char *headers) {
     const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
 
     for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
-        token = strtoktrim(i? NULL: headers, "\n", &saveptr);
+        token = str_tokenize(i? NULL: headers, "\n", &saveptr);
         if (token == NULL) {
             break;
         }

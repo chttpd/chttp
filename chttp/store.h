@@ -42,7 +42,7 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
 
 
 int
-store_ifci(struct chttp_store *lb, const char **dst, char *in,
+store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *in,
         const char *kw);
 
 

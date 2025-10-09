@@ -27,7 +27,7 @@ typedef char *str_t;
 
 
 int
-strtokenize(char *str, const char *delim, int count, char *out[]);
+str_tokenizeall(char *str, const char *delim, int count, char *out[]);
 
 
 char *
@@ -35,7 +35,7 @@ strtrim(char *s, int *len);
 
 
 char *
-strtoktrim(char *str, const char *restrict delim, char **restrict saveptr);
+str_tokenize(char *str, const char *restrict delim, char **restrict saveptr);
 
 
 #endif  // CHTTP_STR_H_

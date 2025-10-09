@@ -83,19 +83,32 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
 }
 
 
+/** store the src if startswith kw and set the dst to the pointer to the first
+ * character.
+ *
+ * returns:
+ * -1 if kw is null or empty.
+ *  0 if src is not started with kw.
+ *  1 on successfull invokation.
+ */
 int
-store_ifci(struct chttp_store *lb, const char **dst, char *in,
+store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *src,
         const char *kw) {
-    int kwlen = strlen(kw);
+    int kwlen;
 
+    if (kw == NULL) {
+        return -1;
+    }
+
+    kwlen = strlen(kw);
     if (kwlen == 0) {
         return -1;
     }
 
-    if (strcasestr(in, kw) == NULL) {
+    if (strcasestr(src, kw) == NULL) {
         return 0;
     }
 
-    *dst = strtrim(in + kwlen, NULL);
+    *dst = strtrim(src + kwlen, NULL);
     return 1;
 }

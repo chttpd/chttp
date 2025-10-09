@@ -58,6 +58,20 @@
 //     eqptr(backend, foo);
 // }
 
+void
+test_store_ifstartswith_ci() {
+    char backend[BUFFSIZE];
+    struct chttp_store b;
+    const char *dst;
+
+    store_init(&b, backend, BUFFSIZE);
+
+    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", NULL));
+    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", ""));
+
+    eqint(0, store_ifstartswith_ci(&b, &dst, "foo bar", "bar"));
+}
+
 
 void
 test_store() {
@@ -79,8 +93,7 @@ test_store() {
 
 int
 main() {
-    // test_store_replaceall();
-    // test_store_replace();
+    test_store_ifstartswith_ci();
     test_store();
     return EXIT_SUCCESS;
 }

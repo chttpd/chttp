@@ -32,19 +32,19 @@ test_strtoktrim() {
     char in[16];
 
     sprintf(in, "\n");
-    eqptr(in, strtoktrim(in, "\n", &saveptr));
+    eqptr(in, str_tokenize(in, "\n", &saveptr));
     eqint(0, in[0]);
     eqptr(in + 1, saveptr);
-    isnull(strtoktrim(NULL, "\n", &saveptr));
+    isnull(str_tokenize(NULL, "\n", &saveptr));
 
     sprintf(in, "foo\r\nbar");
-    eqptr(in, strtoktrim(in, "\n", &saveptr));
+    eqptr(in, str_tokenize(in, "\n", &saveptr));
     eqint(0, in[3]);
     eqptr(in + 5, saveptr);
-    eqstr("bar", strtoktrim(NULL, "\n", &saveptr));
+    eqstr("bar", str_tokenize(NULL, "\n", &saveptr));
     eqint(0, in[8]);
     eqptr(in + 8, saveptr);
-    isnull(strtoktrim(NULL, "\n", &saveptr));
+    isnull(str_tokenize(NULL, "\n", &saveptr));
     eqptr(in + 8, saveptr);
 }
 
@@ -56,36 +56,36 @@ test_strsplit() {
 
     /* no delimiter inside input string */
     sprintf(tmp, "foobar");
-    eqint(1, strtokenize(tmp, " ", 2, out));
+    eqint(1, str_tokenizeall(tmp, " ", 2, out));
     eqstr("foobar", out[0]);
 
     /* null */
-    eqint(-1, strtokenize(NULL, " ", 2, out));
+    eqint(-1, str_tokenizeall(NULL, " ", 2, out));
 
     /* empty */
-    eqint(0, strtokenize("", " ", 2, out));
+    eqint(0, str_tokenizeall("", " ", 2, out));
 
     /* extra delimiter */
     sprintf(tmp, "foo bar ");
-    eqint(2, strtokenize(tmp, " ", 2, out));
+    eqint(2, str_tokenizeall(tmp, " ", 2, out));
     eqstr("foo", out[0]);
     eqstr("bar", out[1]);
 
     /* insufficient token */
     sprintf(tmp, "foo bar ");
-    eqint(2, strtokenize(tmp, " ", 3, out));
+    eqint(2, str_tokenizeall(tmp, " ", 3, out));
     eqstr("foo", out[0]);
     eqstr("bar", out[1]);
 
     /* extra token */
     sprintf(tmp, "foo bar baz");
-    eqint(-2, strtokenize(tmp, " ", 2, out));
+    eqint(-2, str_tokenizeall(tmp, " ", 2, out));
     eqstr("foo", out[0]);
     eqstr("bar", out[1]);
 
     /* as expected */
     sprintf(tmp, "foo bar");
-    eqint(2, strtokenize(tmp, " ", 2, out));
+    eqint(2, str_tokenizeall(tmp, " ", 2, out));
     eqstr("foo", out[0]);
     eqstr("bar", out[1]);
 }

@@ -109,6 +109,6 @@ store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *src,
         return 0;
     }
 
-    *dst = strtrim(src + kwlen, NULL);
+    *dst = str_trim(src + kwlen, NULL);
     return 1;
 }

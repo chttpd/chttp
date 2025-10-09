@@ -40,7 +40,7 @@ str_fmap(void *ctx, str_func_t f, char **s) {
 
 
 char *
-strtrim(char *s, int *len) {
+str_trim(char *s, int *len) {
     if (s == NULL) {
         return NULL;
     }
@@ -89,10 +89,10 @@ str_tokenize(char *str, const char *restrict delim, char **restrict saveptr) {
     if (found) {
         found[0] = '\0';
         *saveptr = found + delimlen;
-        return strtrim(start, NULL);
+        return str_trim(start, NULL);
     }
 
-    found = strtrim(start, &len);
+    found = str_trim(start, &len);
     *saveptr = found + len;
     return found;
 }

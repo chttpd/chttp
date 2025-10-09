@@ -31,7 +31,7 @@ str_tokenizeall(char *str, const char *delim, int count, char *out[]);
 
 
 char *
-strtrim(char *s, int *len);
+str_trim(char *s, int *len);
 
 
 char *

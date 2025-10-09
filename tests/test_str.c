@@ -98,15 +98,15 @@ test_strtrim() {
 
     sprintf(tmp, "\r");
     eqint(1, strlen(tmp));
-    eqstr("", strtrim(tmp, &len));
+    eqstr("", str_trim(tmp, &len));
     eqint(0, len);
 
     sprintf(tmp, " foo ");
-    eqstr("foo", strtrim(tmp, &len));
+    eqstr("foo", str_trim(tmp, &len));
     eqint(3, len);
 
     sprintf(tmp, "foo\r");
-    eqstr("foo", strtrim(tmp, &len));
+    eqstr("foo", str_trim(tmp, &len));
     eqint(3, len);
 }
 

@@ -97,7 +97,7 @@ _header_known(struct chttp_request *req, char *header) {
     int ret;
 
     if (strcasestr(header, "content-length:") == header) {
-        req->contentlength = atoi(strtrim(header + 15, NULL));
+        req->contentlength = atoi(str_trim(header + 15, NULL));
         return 1;
     }
 
@@ -114,13 +114,13 @@ _header_known(struct chttp_request *req, char *header) {
     }
 
     if (strcasestr(header, "content-type:") == header) {
-        tmp = strtrim(header + 13, NULL);
+        tmp = str_trim(header + 13, NULL);
         _contenttype_parse(req, tmp);
         return 1;
     }
 
     if (strcasestr(header, "connection:") == header) {
-        tmp = strtrim(header + 11, NULL);
+        tmp = str_trim(header + 11, NULL);
         if (strcasecmp("close", tmp) == 0) {
             req->connection = CHTTP_CONNECTION_CLOSE;
         }

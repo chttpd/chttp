@@ -88,43 +88,38 @@ store_str(struct chttp_store *lb, const char **dst, const char *str) {
 }
 
 
-const char *
-store_one(struct chttp_store *lb, const char *str) {
-    char *start;
-    char *end;
-    int len;
-
-    if (str == NULL) {
-        return NULL;
-    }
-
-    start = lb->backend + lb->len;
-    end = stpcpy(start, str);
-
-    len = end - start;
-    if (len <= 0) {
-        return NULL;
-    }
-
-    /* +1 null termination */
-    lb->len += len + 1;
-    return start;
-}
+// const char *
+// store_one(struct chttp_store *lb, const char *str) {
+//     char *start;
+//     char *end;
+//     int len;
+//
+//     if (str == NULL) {
+//         return NULL;
+//     }
+//
+//     start = lb->backend + lb->len;
+//     end = stpcpy(start, str);
+//
+//     len = end - start;
+//     if (len <= 0) {
+//         return NULL;
+//     }
+//
+//     /* +1 null termination */
+//     lb->len += len + 1;
+//     return start;
+// }
 
 
 int
 store_all(struct chttp_store *lb, int count, const char **dst[],
         const char *src[]) {
     int i;
-    const char *o;
 
     for (i = 0; i < count; i++) {
-        if (src[i]) {
-            o = store_one(lb, src[i]);
-            *dst[i] = o;
-        }
-        else {
-            *dst[i] = NULL;
+        if (store_str(lb, dst[i], src[i])) {
+            return i + 1;
         }
     }
 

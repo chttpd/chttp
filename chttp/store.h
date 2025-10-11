@@ -36,8 +36,8 @@ int
 store_str(struct chttp_store *lb, const char **dst, const char *str);
 
 
-const char *
-store_one(struct chttp_store *lb, const char *src);
+// const char *
+// store_one(struct chttp_store *lb, const char *src);
 
 
 int

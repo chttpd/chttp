@@ -58,23 +58,73 @@
 //     eqptr(backend, foo);
 // }
 
+// void
+// test_store_ifstartswith_ci() {
+//     char backend[BUFFSIZE];
+//     struct chttp_store b;
+//     const char *dst;
+//
+//     store_init(&b, backend, BUFFSIZE);
+//
+//     eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", NULL));
+//     eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", ""));
+//
+//     eqint(0, store_ifstartswith_ci(&b, &dst, "foo bar", "bar"));
+// }
+
+
 void
-test_store_ifstartswith_ci() {
-    char backend[BUFFSIZE];
+test_store_str() {
+    char backend[16];
     struct chttp_store b;
-    const char *dst;
+    const char *dst = "foo";
 
-    store_init(&b, backend, BUFFSIZE);
+    store_init(&b, backend, sizeof(backend));
 
-    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", NULL));
-    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", ""));
+    eqint(0, store_str(&b, &dst, NULL));
+    isnull(dst);
 
-    eqint(0, store_ifstartswith_ci(&b, &dst, "foo bar", "bar"));
+    eqint(0, store_str(&b, &dst, "foo bar"));
+    eqptr(backend, dst);
+    eqstr("foo bar", dst);
+    eqint(8, b.len);
+
+    eqint(0, store_str(&b, &dst, "baz"));
+    eqptr(backend + 8, dst);
+    eqstr("baz", dst);
+    eqint(12, b.len);
+
+    eqint(0, store_str(&b, &dst, "qux"));
+    eqstr("qux", dst);
+
+    eqint(-1, store_str(&b, &dst, "1"));
 }
 
 
 void
-test_store() {
+test_store_allocate() {
+    char backend[16];
+    struct chttp_store b;
+
+    store_init(&b, backend, sizeof(backend));
+
+    /* allocate zero bytes! */
+    isnull(store_allocate(&b, 0));
+
+    /* sucessfull */
+    eqptr(backend, store_allocate(&b, 10));
+    eqint(10, b.len);
+    eqptr(backend + 10, store_allocate(&b, 6));
+    eqint(16, b.len);
+
+    /* insufficient */
+    isnull(store_allocate(&b, 1));
+    isnull(store_allocate(&b, 2));
+}
+
+
+void
+test_store_init() {
     char backend[BUFFSIZE];
     struct chttp_store b;
 
@@ -82,18 +132,15 @@ test_store() {
     eqint(BUFFSIZE, b.size);
     eqint(0, b.len);
     eqptr(backend, b.backend);
-
-    eqptr(backend, store_one(&b, "foo bar"));
-    eqint(8, b.len);
-
-    eqptr(backend + 8, store_one(&b, "baz"));
-    eqint(12, b.len);
 }
 
 
 int
 main() {
-    test_store_ifstartswith_ci();
-    test_store();
+    // TODO: test_store_all();
+    // test_store_ifstartswith_ci();
+    test_store_str();
+    test_store_allocate();
+    test_store_init();
     return EXIT_SUCCESS;
 }

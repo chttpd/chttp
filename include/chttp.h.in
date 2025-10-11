@@ -24,6 +24,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+/* system */
+#include <sys/types.h>
+
 
 #cmakedefine CONFIG_CHTTP_REQUEST_BUFFSIZE @CONFIG_CHTTP_REQUEST_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_RESPONSE_BUFFSIZE @CONFIG_CHTTP_RESPONSE_BUFFSIZE@

@@ -23,59 +23,57 @@
 #include "store.h"
 
 
-#define BUFFSIZE  512
+#define BUFFSIZE  16
 
 
-// void
-// test_store_replaceall() {
-//     char buff[16] = "foo\0bar\0";
-//     char backend[BUFFSIZE];
-//     struct chttp_store b;
-//     const char *foo = buff;
-//     const char *bar = buff + 4;
-//     const char **both[2] = {&foo, &bar};
-//
-//     store_init(&b, backend, BUFFSIZE);
-//     eqint(0, store_replaceall(&b, 2, both));
-//     eqstr("foo", foo);
-//     eqptr(backend, foo);
-//     eqstr("bar", bar);
-//     eqptr(backend + 4, bar);
-//     eqbin("foo\0bar\0", backend, 8);
-// }
-//
-//
-// void
-// test_store_replace() {
-//     char buff[8] = "foo\0";
-//     char backend[BUFFSIZE];
-//     struct chttp_store b;
-//     const char *foo = buff;
-//
-//     store_init(&b, backend, BUFFSIZE);
-//     eqint(0, store_replace(&b, &foo));
-//     eqstr("foo", foo);
-//     eqptr(backend, foo);
-// }
+void
+test_store_ifstartswith_ci() {
+    char backend[BUFFSIZE];
+    struct chttp_store b;
+    const char *dst;
 
-// void
-// test_store_ifstartswith_ci() {
-//     char backend[BUFFSIZE];
-//     struct chttp_store b;
-//     const char *dst;
-//
-//     store_init(&b, backend, BUFFSIZE);
-//
-//     eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", NULL));
-//     eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", ""));
-//
-//     eqint(0, store_ifstartswith_ci(&b, &dst, "foo bar", "bar"));
-// }
+    store_init(&b, backend, BUFFSIZE);
+
+    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", NULL));
+    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", ""));
+
+    eqint(1, store_ifstartswith_ci(&b, &dst, "foo bar", "bar"));
+
+    eqint(0, store_ifstartswith_ci(&b, &dst, "foo bar", "foo"));
+    eqptr(backend, dst);
+    eqstr("foo bar", dst);
+    eqint(8, b.len);
+    eqint(0, store_ifstartswith_ci(&b, &dst, "bar baz", "bar"));
+
+    /* insufficient space */
+    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", "foo"));
+}
+
+
+void
+test_store_all() {
+    char backend[BUFFSIZE];
+    struct chttp_store b;
+    const char *srcs[5] = {"foo", "bar", "baz", "qux", "quux"};
+    const char *foo, *bar, *baz, *qux, *quux;
+    const char **dsts[5] = {&foo, &bar, &baz, &qux, &quux};
+
+    store_init(&b, backend, sizeof(backend));
+    eqint(4, store_all(&b, 4, dsts, srcs));
+    eqstr("foo", foo);
+    eqstr("bar", bar);
+    eqstr("baz", baz);
+    eqstr("qux", qux);
+
+    store_init(&b, backend, sizeof(backend));
+    eqint(4, store_all(&b, 5, dsts, srcs));
+    eqint(0, store_all(&b, 5, dsts, srcs));
+}
 
 
 void
 test_store_str() {
-    char backend[16];
+    char backend[BUFFSIZE];
     struct chttp_store b;
     const char *dst = "foo";
 
@@ -103,7 +101,7 @@ test_store_str() {
 
 void
 test_store_allocate() {
-    char backend[16];
+    char backend[BUFFSIZE];
     struct chttp_store b;
 
     store_init(&b, backend, sizeof(backend));
@@ -115,7 +113,7 @@ test_store_allocate() {
     eqptr(backend, store_allocate(&b, 10));
     eqint(10, b.len);
     eqptr(backend + 10, store_allocate(&b, 6));
-    eqint(16, b.len);
+    eqint(BUFFSIZE, b.len);
 
     /* insufficient */
     isnull(store_allocate(&b, 1));
@@ -137,8 +135,8 @@ test_store_init() {
 
 int
 main() {
-    // TODO: test_store_all();
-    // test_store_ifstartswith_ci();
+    test_store_ifstartswith_ci();
+    test_store_all();
     test_store_str();
     test_store_allocate();
     test_store_init();

@@ -57,7 +57,7 @@ store_allocate(struct chttp_store *lb, size_t size) {
 }
 
 
-/** store the src into dst.
+/** store the str into dst.
   * return:
   *  0 on successfull invokation.
   * -1 when the available space in the storage is insufficient
@@ -88,30 +88,6 @@ store_str(struct chttp_store *lb, const char **dst, const char *str) {
 }
 
 
-// const char *
-// store_one(struct chttp_store *lb, const char *str) {
-//     char *start;
-//     char *end;
-//     int len;
-//
-//     if (str == NULL) {
-//         return NULL;
-//     }
-//
-//     start = lb->backend + lb->len;
-//     end = stpcpy(start, str);
-//
-//     len = end - start;
-//     if (len <= 0) {
-//         return NULL;
-//     }
-//
-//     /* +1 null termination */
-//     lb->len += len + 1;
-//     return start;
-// }
-
-
 int
 store_all(struct chttp_store *lb, int count, const char **dst[],
         const char *src[]) {
@@ -119,24 +95,24 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
 
     for (i = 0; i < count; i++) {
         if (store_str(lb, dst[i], src[i])) {
-            return i + 1;
+            break;
         }
     }
 
-    return 0;
+    return i;
 }
 
 
-/** store the src if startswith kw and set the dst to the pointer to the first
+/** store the str if startswith kw and set the dst to the pointer to the first
  * character.
  *
  * returns:
  * -1 if kw is null or empty.
- *  0 if src is not started with kw.
- *  1 on successfull invokation.
+ *  1 if str is not started with kw.
+ *  0 on successfull invokation.
  */
 int
-store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *src,
+store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *str,
         const char *kw) {
     int kwlen;
 
@@ -149,10 +125,9 @@ store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *src,
         return -1;
     }
 
-    // if (strcasestr(src, kw) == NULL) {
-    //     return 0;
-    // }
+    if (!str_startswith(str, kw)) {
+        return 1;
+    }
 
-    // *dst = str_trim(src + kwlen, NULL);
-    return 1;
+    return store_str(lb, dst, str);
 }

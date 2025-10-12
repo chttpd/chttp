@@ -91,6 +91,12 @@ _startline_parse(struct chttp_request *req, char *line) {
 }
 
 
+/** determine and store known headers.
+  * return:
+  * -1 error
+  *  1 unknown header
+  *  0 known header
+  */
 static int
 _header_known(struct chttp_request *req, char *header) {
     char *tmp;
@@ -103,37 +109,37 @@ _header_known(struct chttp_request *req, char *header) {
 
     ret = store_ifstartswith_ci(&req->store, &req->useragent, header,
             "user-agent:");
-    if (ret) {
+    if (ret <= 0) {
         return ret;
     }
 
     ret = store_ifstartswith_ci(&req->store, &req->expect, header,
             "expect:");
-    if (ret) {
+    if (ret <= 0) {
         return ret;
     }
 
-    if (strcasestr(header, "content-type:") == header) {
+    if (str_startswith(header, "content-type:")) {
         tmp = str_trim(header + 13, NULL);
         _contenttype_parse(req, tmp);
-        return 1;
+        return 0;
     }
 
-    if (strcasestr(header, "connection:") == header) {
+    if (str_startswith(header, "connection:")) {
         tmp = str_trim(header + 11, NULL);
         if (strcasecmp("close", tmp) == 0) {
             req->connection = CHTTP_CONNECTION_CLOSE;
         }
-        else if (strcasecmp("keep-alive", tmp) == 0) {
+        else if (str_startswith("keep-alive", tmp)) {
             req->connection = CHTTP_CONNECTION_KEEPALIVE;
         }
         else {
             return -1;
         }
-        return 1;
+        return 0;
     }
 
-    return 0;
+    return 1;
 }
 
 
@@ -163,7 +169,7 @@ _headers_parse(struct chttp_request *req, char *headers) {
             return 400;
         }
 
-        if (ret > 0) {
+        if (ret == 0) {
             continue;
         }
 

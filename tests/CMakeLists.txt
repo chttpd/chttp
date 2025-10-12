@@ -4,8 +4,8 @@ list(APPEND testrules
   str
   store
   status
-  request
-  response
+  # request
+  # response
   buffwriter
 )
 

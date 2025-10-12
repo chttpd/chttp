@@ -112,7 +112,7 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
  *  0 on successfull invokation.
  */
 int
-store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *str,
+store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, char *str,
         const char *kw) {
     int kwlen;
 
@@ -129,5 +129,5 @@ store_ifstartswith_ci(struct chttp_store *lb, const char **dst, char *str,
         return 1;
     }
 
-    return store_str(lb, dst, str);
+    return store_str(lb, dst, str_trim(str + kwlen, NULL));
 }

@@ -24,4 +24,8 @@
 #include "chttp.h"
 
 
+chttp_status_t
+requestf(struct chttp_request *r, const char *fmt, ...);
+
+
 #endif  // TESTS_FIXTURES_H_

@@ -29,14 +29,21 @@
 
 void
 test_response() {
-    struct chttp_response resp;
     char buff[1024];
-    int len = 1024;
+    int len = sizeof(buff);
+    struct chttp_request *r = chttp_request_new(3);
+    isnotnull(r);
 
-    eqint(0, chttp_response_start(&resp, 200, "Ok"));
-    eqint(0, chttp_response_tobuff(&resp, buff, &len));
-    eqint(19, len);
-    eqstr("HTTP/1.1 200 Ok\r\n\r\n", buff);
+    // eqint(0, chttp_response_start(r, 200, NULL));
+    // eqint(0, chttp_response_tobuff(r, buff, &len));
+    // eqint(19, len);
+    // eqstr("HTTP/1.1 200 Ok\r\n\r\n", buff);
+
+    // chttp_response_start(r, 200, NULL);
+    // chttp_response_contenttype(r, "text/plain);
+    // chttp_response_header(r, "foo", "bar);
+    // chttp_response_body(r, "foo %s", "bar");
+    // chttp_response_tobuff(r, "foo %s", "bar");
 
     // eqint(0, chttp_response_header(&resp, "foo = %s", "bar"));
     // resp.contentlength = 0;

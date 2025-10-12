@@ -17,20 +17,18 @@
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
 /* standard */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 
 /* local private */
+#include "chttp.h"
+#include "store.h"
 #include "str.h"
 #include "uri.h"
-#include "store.h"
 #include "request.h"
 
 
 static int
-_contenttype_parse(struct chttp_request *req, char *in) {
+_contenttype_parse(struct chttp_request *r, char *in) {
     char *tokens[2];
 
     switch (str_tokenizeall(in, ";", 2, tokens)) {
@@ -45,8 +43,106 @@ _contenttype_parse(struct chttp_request *req, char *in) {
             return -1;
     }
 
-    return store_all(&req->store, 2, (const char **[]) {
-            &req->contenttype, &req->charset}, (const char **)tokens);
+    if (2 != store_all(&r->store, 2, (const char **[]) {
+            &r->contenttype, &r->charset}, (const char **)tokens)) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+/** determine and store known headers.
+  * return:
+  * -1 error
+  *  1 unknown header
+  *  0 known header
+  */
+static int
+_header_known(struct chttp_request *r, char *header) {
+    char *tmp;
+    int ret;
+
+    if (strcasestr(header, "content-length:") == header) {
+        r->contentlength = atoi(str_trim(header + 15, NULL));
+        return 0;
+    }
+
+    ret = store_suffixifprefix_ci(&r->store, &r->useragent, header,
+            "user-agent:");
+    if (ret <= 0) {
+        return ret;
+    }
+
+    ret = store_suffixifprefix_ci(&r->store, &r->expect, header, "expect:");
+    if (ret <= 0) {
+        return ret;
+    }
+
+    if (str_startswith(header, "content-type:")) {
+        tmp = str_trim(header + 13, NULL);
+        if (_contenttype_parse(r, tmp)) {
+            return -1;
+        }
+
+        return 0;
+    }
+
+    return 1;
+}
+
+
+static chttp_status_t
+_headers_parse(struct chttp_request *r, char *headers) {
+    int ret;
+    int i;
+    int count = 0;
+    char *token;
+    char *saveptr = NULL;
+    char *hdrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+
+    for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
+        token = str_tokenize(i? NULL: headers, "\r", &saveptr);
+        if (token == NULL) {
+            break;
+        }
+
+        if (!token[0]) {
+            /* zero length header found */
+            return 400;
+        }
+
+        ret = _header_known(r, token);
+        if (ret == -1) {
+            return 400;
+        }
+
+        if (ret == 0) {
+            continue;
+        }
+
+        hdrs[count++] = token;
+    }
+
+    if (count == 0) {
+        return 0;
+    }
+
+    if (saveptr[0]) {
+        return 400;
+    }
+
+    for (i = 0; i < count; i++) {
+        ptrs[i] = &r->headers[i];
+    }
+
+    /* apply the store functor to all pointers */
+    if (count != store_all(&r->store, count, ptrs, (const char **)hdrs)) {
+        return 500;
+    }
+
+    r->headerscount = count;
     return 0;
 }
 
@@ -73,7 +169,7 @@ _pathquery_split(char *uri, char **path, char **query) {
 
 
 static int
-_startline_parse(struct chttp_request *req, char *line) {
+_startline_parse(struct chttp_request *r, char *line) {
     char *tokens[4];
 
     /* verb/uri/protocol */
@@ -85,122 +181,33 @@ _startline_parse(struct chttp_request *req, char *line) {
         return -1;
     }
 
-    return store_all(&req->store, 4, (const char **[]) {
-            &req->verb, &req->path, &req->protocol, &req->query
-        }, (const char **)tokens);
-}
-
-
-/** determine and store known headers.
-  * return:
-  * -1 error
-  *  1 unknown header
-  *  0 known header
-  */
-static int
-_header_known(struct chttp_request *req, char *header) {
-    char *tmp;
-    int ret;
-
-    if (strcasestr(header, "content-length:") == header) {
-        req->contentlength = atoi(str_trim(header + 15, NULL));
-        return 1;
+    if (4 != store_all(&r->store, 4, (const char **[]) {
+                &r->verb, &r->path, &r->protocol, &r->query
+            }, (const char **)tokens)) {
+        return -1;
     }
 
-    ret = store_ifstartswith_ci(&req->store, &req->useragent, header,
-            "user-agent:");
-    if (ret <= 0) {
-        return ret;
-    }
-
-    ret = store_ifstartswith_ci(&req->store, &req->expect, header,
-            "expect:");
-    if (ret <= 0) {
-        return ret;
-    }
-
-    if (str_startswith(header, "content-type:")) {
-        tmp = str_trim(header + 13, NULL);
-        _contenttype_parse(req, tmp);
-        return 0;
-    }
-
-    if (str_startswith(header, "connection:")) {
-        tmp = str_trim(header + 11, NULL);
-        if (strcasecmp("close", tmp) == 0) {
-            req->connection = CHTTP_CONNECTION_CLOSE;
-        }
-        else if (str_startswith("keep-alive", tmp)) {
-            req->connection = CHTTP_CONNECTION_KEEPALIVE;
-        }
-        else {
-            return -1;
-        }
-        return 0;
-    }
-
-    return 1;
-}
-
-
-static chttp_status_t
-_headers_parse(struct chttp_request *req, char *headers) {
-    int ret;
-    int i;
-    int count = 0;
-    char *token;
-    char *saveptr = NULL;
-    char *hdrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-    const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-
-    for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
-        token = str_tokenize(i? NULL: headers, "\n", &saveptr);
-        if (token == NULL) {
-            break;
-        }
-
-        if (!token[0]) {
-            /* zero length header found */
-            return 431;
-        }
-
-        ret = _header_known(req, token);
-        if (ret == -1) {
-            return 400;
-        }
-
-        if (ret == 0) {
-            continue;
-        }
-
-        hdrs[count++] = token;
-    }
-
-    if (count == 0) {
-        return 0;
-    }
-
-    if (saveptr[0]) {
-        return 400;
-    }
-
-    for (i = 0; i < count; i++) {
-        ptrs[i] = &req->headers[i];
-    }
-
-    /* apply the store functor to all pointers */
-    if (store_all(&req->store, count, ptrs, (const char **)hdrs)) {
-        return 500;
-    }
-
-    req->headerscount = count;
     return 0;
 }
 
 
+struct chttp_request *
+chttp_request_new(uint8_t pages) {
+    struct chttp_request *r;
+    size_t total = pages * CONFIG_SYSTEM_PAGESIZE;
+
+    r = malloc(total);
+    if (r == NULL) {
+        return NULL;
+    }
+
+    store_init(&r->store, r->storebuff, total - sizeof(struct chttp_request));
+    return r;
+}
+
+
 chttp_status_t
-chttp_request_frombuffer(struct chttp_request *req, char *header,
-        size_t size) {
+chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
     char *line;
     char *saveptr;
 
@@ -208,52 +215,31 @@ chttp_request_frombuffer(struct chttp_request *req, char *header,
         return 400;
     }
 
-    if (size > CONFIG_CHTTP_REQUEST_BUFFSIZE) {
+    if (size > store_avail(r->store)) {
         return 431;
     }
 
-    if (strncmp("\n\n", header + (size - 2), 2) == 0) {
-        size--;
-    }
-    else if (strncmp("\r\n\r\n", header + (size - 4), 4) == 0) {
-        size -= 2;
-    }
-    else {
-        return 400;
-    }
+    /* null termination for strtok_r */
+    header[size - 1] = 0;
 
-    header[size] = 0;
-
-    memset(req, 0, sizeof(struct chttp_request));
-    store_init(&req->store, req->storebuff, CHTTP_REQUEST_STORE_BUFFSIZE);
+    /* reset the request */
+    memset(r, 0, ((void *)&r->store) - ((void *)r));
+    r->contentlength = -1;
+    r->store.len = 0;
 
     /* startline */
-    line = strtok_r(header, "\n", &saveptr);
+    line = strtok_r(header, "\r\n", &saveptr);
     if (line == NULL) {
         return 414;
     }
 
-    if (_startline_parse(req, line)) {
-        return 414;
+    if (_startline_parse(r, line)) {
+        return 400;
     }
 
-    return _headers_parse(req, saveptr);
-}
-
-
-chttp_status_t
-chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...) {
-    size_t bytes;
-    va_list args;
-    char tmp[CONFIG_CHTTP_REQUEST_BUFFSIZE];
-
-    va_start(args, fmt);
-    bytes = vsprintf(tmp, fmt, args);
-    va_end(args);
-
-    if (bytes < 0) {
-        return -1;
+    if (saveptr && (saveptr[0] = '\n')) {
+        saveptr++;
     }
 
-    return chttp_request_frombuffer(req, tmp, bytes);
+    return _headers_parse(r, saveptr);
 }

@@ -16,7 +16,30 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
+/* standard */
+#include <stdarg.h>
+#include <stdio.h>
 
 
 /* local private */
 #include "fixtures.h"
+
+
+static char _reqbuff[CONFIG_SYSTEM_PAGESIZE * 4];
+
+
+chttp_status_t
+requestf(struct chttp_request *r, const char *fmt, ...) {
+    size_t bytes;
+    va_list args;
+
+    va_start(args, fmt);
+    bytes = vsprintf(_reqbuff, fmt, args);
+    va_end(args);
+
+    if (bytes < 0) {
+        return -1;
+    }
+
+    return chttp_request_parse(r, _reqbuff, bytes);
+}

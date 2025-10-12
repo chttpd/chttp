@@ -24,9 +24,9 @@
 
 
 static const char * _statuses[] = {
-    [200] = "Ok",
-    [400] = "Bad Request",
-    [404] = "Not Found",
+    [CHTTP_STATUS_200_OK] = "Ok",
+    [CHTTP_STATUS_400_BADREQUEST] = "Bad Request",
+    [CHTTP_STATUS_404_NOTFOUND] = "Not Found",
 };
 
 

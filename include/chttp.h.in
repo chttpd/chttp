@@ -21,27 +21,28 @@
 
 
 /* standard */
-#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 /* system */
 #include <sys/types.h>
 
 
-#cmakedefine CONFIG_CHTTP_REQUEST_BUFFSIZE @CONFIG_CHTTP_REQUEST_BUFFSIZE@
-#cmakedefine CONFIG_CHTTP_RESPONSE_BUFFSIZE @CONFIG_CHTTP_RESPONSE_BUFFSIZE@
 #cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
+#cmakedefine CONFIG_SYSTEM_PAGESIZE @CONFIG_SYSTEM_PAGESIZE@
 
 
+/* statuses */
 typedef int chttp_status_t;
-enum chttp_connection {
-    CHTTP_CONNECTION_NOTSPECIFIED = 0,
-    CHTTP_CONNECTION_CLOSE = 1,
-    CHTTP_CONNECTION_KEEPALIVE = 2,
+enum chttp_status {
+    CHTTP_STATUS_200_OK = 200,
+    CHTTP_STATUS_400_BADREQUEST = 400,
+    CHTTP_STATUS_404_NOTFOUND = 404,
 };
 
 
-#define store_avail(lb) ((lb)->size - (lb)->len)
+/* store */
+#define store_avail(s) ((s).size - (s).len)
 struct chttp_store {
     char *backend;
     size_t size;
@@ -49,34 +50,16 @@ struct chttp_store {
 };
 
 
-struct chttp_responseview {
-    int status;
-    const char *text;
-    const char *protocol;
-    const char *contenttype;
-    const char *charset;
-    size_t contentmax;
-    ssize_t contentlength;
-    char *content;
-
-    unsigned short headerscount;
-    const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-};
-
-
-#define CHTTP_RESPONSE_STORE_BUFFSIZE \
-    (CONFIG_CHTTP_RESPONSE_BUFFSIZE - sizeof(struct chttp_responseview) \
-        - sizeof(struct chttp_store))
-
-
 struct chttp_response {
-    struct chttp_responseview;
-    struct chttp_store store;
-    char storebuff[CHTTP_RESPONSE_STORE_BUFFSIZE];
+    char *header;
+    unsigned int headerlen;
+
+    char *body;
+    unsigned int bodylen;
 };
 
 
-struct chttp_requestview {
+struct chttp_request {
     const char *verb;
     const char *path;
     const char *query;
@@ -85,60 +68,27 @@ struct chttp_requestview {
     const char *charset;
     const char *expect;
     const char *useragent;
-    enum chttp_connection connection;
-    // FIXME: choose a better name
-    size_t contentlength;
+    ssize_t contentlength;
 
     unsigned short headerscount;
     const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-};
 
-
-#define CHTTP_REQUEST_STORE_BUFFSIZE \
-    (CONFIG_CHTTP_REQUEST_BUFFSIZE - sizeof(struct chttp_requestview) \
-        - sizeof(struct chttp_store))
-
-
-struct chttp_request {
-    struct chttp_requestview;
+    struct chttp_response response;
     struct chttp_store store;
-    char storebuff[CHTTP_REQUEST_STORE_BUFFSIZE];
+    char storebuff[];
 };
-
-
-chttp_status_t
-chttp_request_frombuffer(struct chttp_request *req, char *header,
-        size_t size);
-
-
-chttp_status_t
-chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...);
-
-
-int
-chttp_response_start(struct chttp_response *resp, chttp_status_t status,
-        const char *text);
-
-
-int
-chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len);
-
-
-int
-chttp_response_header(struct chttp_response *resp, const char *fmt, ...);
-
-
-int
-chttp_response_contenttype(struct chttp_response *resp, const char *type,
-        const char *charset);
-
-
-int
-chttp_response_write(struct chttp_response *resp, const char *fmt, ...);
 
 
 const char *
 chttp_status_text(chttp_status_t status);
+
+
+struct chttp_request *
+chttp_request_new(uint8_t pages);
+
+
+chttp_status_t
+chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

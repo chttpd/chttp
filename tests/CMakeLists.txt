@@ -15,7 +15,7 @@ set(profilerules ${testrules})
 list(TRANSFORM profilerules APPEND -profile)
 add_custom_target(profile_tests DEPENDS ${profilerules})
 
-
+add_library(fixtures OBJECT fixtures.c fixtures.h)
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/chttp
@@ -24,7 +24,7 @@ include_directories(
 foreach (t IN LISTS testrules) 
     # Test help
   add_executable(${t} ${t}.c 
-    # $<TARGET_OBJECTS:helpers>
+    $<TARGET_OBJECTS:fixtures>
   )
   target_include_directories(${t} PUBLIC 
     "${PROJECT_BINARY_DIR}"

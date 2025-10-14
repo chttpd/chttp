@@ -27,26 +27,30 @@
 
 
 void
-test_store_ifstartswith_ci() {
+test_store_suffixifprefix_ci() {
     char backend[BUFFSIZE];
     struct chttp_store b;
     const char *dst;
 
     store_init(&b, backend, BUFFSIZE);
 
-    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", NULL));
-    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", ""));
+    eqint(-1, store_suffixifprefix_ci(&b, &dst, "foo bar", NULL));
+    eqint(-1, store_suffixifprefix_ci(&b, &dst, "foo bar", ""));
 
-    eqint(1, store_ifstartswith_ci(&b, &dst, "foo bar", "bar"));
+    eqint(1, store_suffixifprefix_ci(&b, &dst, "foo bar", "bar"));
 
-    eqint(0, store_ifstartswith_ci(&b, &dst, "foo bar", "foo"));
+    eqint(0, store_suffixifprefix_ci(&b, &dst, "foo bar baz", "foo "));
     eqptr(backend, dst);
-    eqstr("foo bar", dst);
+    eqstr("bar baz", dst);
     eqint(8, b.len);
-    eqint(0, store_ifstartswith_ci(&b, &dst, "bar baz", "bar"));
+    eqint(0, store_suffixifprefix_ci(&b, &dst, "bar baz", "bar"));
+
+    /* auto trim */
+    eqint(0, store_suffixifprefix_ci(&b, &dst, "foo bar", "foo"));
+    eqstr("bar", dst);
 
     /* insufficient space */
-    eqint(-1, store_ifstartswith_ci(&b, &dst, "foo bar", "foo"));
+    eqint(-1, store_suffixifprefix_ci(&b, &dst, "foo bar", "foo"));
 }
 
 
@@ -135,7 +139,7 @@ test_store_init() {
 
 int
 main() {
-    test_store_ifstartswith_ci();
+    test_store_suffixifprefix_ci();
     test_store_all();
     test_store_str();
     test_store_allocate();

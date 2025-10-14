@@ -65,16 +65,16 @@ _header_known(struct chttp_request *r, char *header) {
 
     if (strcasestr(header, "content-length:") == header) {
         r->contentlength = atoi(str_trim(header + 15, NULL));
-        return 1;
+        return 0;
     }
 
-    ret = store_ifstartswith_ci(&r->store, &r->useragent, header,
+    ret = store_suffixifprefix_ci(&r->store, &r->useragent, header,
             "user-agent:");
     if (ret <= 0) {
         return ret;
     }
 
-    ret = store_ifstartswith_ci(&r->store, &r->expect, header, "expect:");
+    ret = store_suffixifprefix_ci(&r->store, &r->expect, header, "expect:");
     if (ret <= 0) {
         return ret;
     }
@@ -103,7 +103,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
     const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
 
     for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
-        token = str_tokenize(i? NULL: headers, "\n", &saveptr);
+        token = str_tokenize(i? NULL: headers, "\r", &saveptr);
         if (token == NULL) {
             break;
         }
@@ -138,7 +138,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
     }
 
     /* apply the store functor to all pointers */
-    if (store_all(&r->store, count, ptrs, (const char **)hdrs)) {
+    if (count != store_all(&r->store, count, ptrs, (const char **)hdrs)) {
         return 500;
     }
 
@@ -231,13 +231,17 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
     r->store.len = 0;
 
     /* startline */
-    line = strtok_r(header, "\r", &saveptr);
+    line = strtok_r(header, "\r\n", &saveptr);
     if (line == NULL) {
         return 414;
     }
 
     if (_startline_parse(r, line)) {
         return 400;
+    }
+
+    if (saveptr && (saveptr[0] = '\n')) {
+        saveptr++;
     }
 
     return _headers_parse(r, saveptr);

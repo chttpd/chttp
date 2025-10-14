@@ -41,6 +41,7 @@ enum chttp_status {
 };
 
 
+/* store */
 #define store_avail(s) ((s).size - (s).len)
 struct chttp_store {
     char *backend;

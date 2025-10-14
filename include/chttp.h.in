@@ -32,7 +32,13 @@
 #cmakedefine CONFIG_SYSTEM_PAGESIZE @CONFIG_SYSTEM_PAGESIZE@
 
 
+/* statuses */
 typedef int chttp_status_t;
+enum chttp_status {
+    CHTTP_STATUS_200_OK = 200,
+    CHTTP_STATUS_400_BADREQUEST = 400,
+    CHTTP_STATUS_404_NOTFOUND = 404,
+};
 
 
 #define store_avail(s) ((s).size - (s).len)
@@ -82,37 +88,6 @@ chttp_request_new(uint8_t pages);
 
 chttp_status_t
 chttp_request_parse(struct chttp_request *r, char *header, size_t size);
-
-
-// chttp_status_t
-// chttp_request_frombuffer(struct chttp_request *req, char *header,
-//         size_t size);
-//
-//
-// chttp_status_t
-// chttp_request_fromstring(struct chttp_request *req, const char *fmt, ...);
-//
-//
-// int
-// chttp_response_start(struct chttp_response *resp, chttp_status_t status,
-//         const char *text);
-//
-//
-// int
-// chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len);
-//
-//
-// int
-// chttp_response_header(struct chttp_response *resp, const char *fmt, ...);
-//
-//
-// int
-// chttp_response_contenttype(struct chttp_response *resp, const char *type,
-//         const char *charset);
-//
-//
-// int
-// chttp_response_write(struct chttp_response *resp, const char *fmt, ...);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

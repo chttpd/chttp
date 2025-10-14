@@ -56,6 +56,12 @@ test_response() {
     //         "Content-Type: text/plain; charset=utf-8\r\n"
     //         "foo = bar\r\n\r\n"
     //         "foo bar\r\n", buff, len);
+
+    // chttp_response_start(r, 200, NULL);
+    // chttp_response_contenttype(r, "text/plain);
+    // chttp_response_header(r, "foo", "bar);
+    // chttp_response_body(r, "foo %s", "bar");
+    // chttp_response_tobuff(r, "foo %s", "bar");
 }
 
 

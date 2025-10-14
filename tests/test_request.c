@@ -41,21 +41,28 @@ test_request_new() {
 
 
 static void
-test_request_parse() {
+test_request_startline() {
     struct chttp_request *r = chttp_request_new(3);
     isnotnull(r);
 
     eqint(0, requestf(r, "GET / HTTP/1.1\r\n"));
-    // eqstr("GET", r->verb);
-    // eqstr("/", r->path);
-    // eqstr("HTTP/1.1", r->protocol);
-    free(r);
+    eqstr("GET", r->verb);
+    eqstr("/", r->path);
+    eqstr("HTTP/1.1", r->protocol);
 
-    // chttp_response_start(r, 200, NULL);
-    // chttp_response_contenttype(r, "text/plain);
-    // chttp_response_header(r, "foo", "bar);
-    // chttp_response_body(r, "foo %s", "bar");
-    // chttp_response_tobuff(r, "foo %s", "bar");
+    eqint(0, requestf(r, "GET /?foo HTTP/1.1\r\n"));
+    eqstr("/", r->path);
+    eqstr("foo", r->query);
+
+    eqint(400, requestf(r, "GET ?foo HTTP/1.1\r\n"));
+    eqint(0, requestf(r, "GET //foo HTTP/1.1\r\n"));
+    eqstr("//foo", r->path);
+
+    eqint(0, requestf(r, "GET /foo/bar HTTP/1.1\r\n"));
+    eqstr("/foo/bar", r->path);
+
+    eqint(400, requestf(r, "GET /foo/bar HTTP/1.1\r\n\r\n"));
+    free(r);
 }
 
 
@@ -136,7 +143,7 @@ test_request_parse() {
 int
 main() {
     test_request_new();
-    test_request_parse();
+    test_request_startline();
     // test_request_size();
     // test_request_boundary();
     // test_request_startline_parse();

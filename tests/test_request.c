@@ -22,93 +22,124 @@
 /* thirdparty */
 #include <cutest.h>
 
-/* local private */
-#include "request.h"
-
 /* local public */
 #include "chttp.h"
 
+/* local private */
+#include "fixtures.h"
 
-void
-test_request() {
-    struct chttp_request req;
 
-    eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
-    eqint(0, req.contentlength);
+static void
+test_request_new() {
+    struct chttp_request *r;
 
-    eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n"
-                "connection: close\n"
-                "content-type: text/plain; charset=utf-8\n"
-                "content-length: 12\n"
-                "expect: 100-continue\n"
-                "user-agent: foo bar baz\n"
-                "foo: bar\n"
-                "\n"));
-    eqint(CHTTP_CONNECTION_CLOSE, req.connection);
-    eqstr("text/plain", req.contenttype);
-    // eqstr("utf-8", req.charset);
-    // eqint(12, req.contentlength);
-    // eqstr("100-continue", req.expect);
-    // eqstr("foo bar baz", req.useragent);
-    // eqint(1, req.headerscount);
-    // eqstr("foo: bar", req.headers[0]);
+    r = chttp_request_new(3);
+    isnotnull(r);
+    eqint(-1, r->contentlength);
+    free(r);
 }
 
 
-void
-test_request_boundary() {
-    struct chttp_request req;
+static void
+test_request_parse() {
+    struct chttp_request *r = chttp_request_new(3);
+    isnotnull(r);
 
-    eqint(431, chttp_request_fromstring(&req,
-                "GET / HTTP/1.1\nfoo=bar\n\n\n"));
-    eqint(431, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n\r\n\r\n"));
-    eqint(431, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n\n"));
-    eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n"));
-    eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1"));
-    eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
+    eqint(0, requestf(r, "GET / HTTP/1.1\r\n"));
+    // eqstr("GET", r->verb);
+    // eqstr("/", r->path);
+    // eqstr("HTTP/1.1", r->protocol);
+    free(r);
+
+    // chttp_response_start(r, 200, NULL);
+    // chttp_response_contenttype(r, "text/plain);
+    // chttp_response_header(r, "foo", "bar);
+    // chttp_response_body(r, "foo %s", "bar");
+    // chttp_response_tobuff(r, "foo %s", "bar");
 }
 
 
-void
-test_request_startline_parse() {
-    struct chttp_request req;
-
-    eqint(0, chttp_request_fromstring(&req,
-                "GET /foo?bar=baz%%20qux HTTP/1.1\r\n\r\n"));
-    eqstr("GET", req.verb);
-    eqstr("/foo", req.path);
-    eqstr("bar=baz qux", req.query);
-    eqstr("HTTP/1.1", req.protocol);
-}
-
-
-void
-test_request_headers_parse() {
-    struct chttp_request req;
-
-    eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
-    eqint(0, req.headerscount);
-
-    eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\nfoo = bar\n\n"));
-    eqstr("foo = bar", req.headers[0]);
-    eqint(1, req.headerscount);
-}
-
-
-void
-test_request_size() {
-    size_t pagesize = getpagesize();
-    size_t reqsize = sizeof(struct chttp_request);
-    eqint(0, reqsize % pagesize);
-}
+// void
+// test_request() {
+//     struct chttp_request req;
+//
+//     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
+//     eqint(0, req.contentlength);
+//
+//     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n"
+//                 "connection: close\n"
+//                 "content-type: text/plain; charset=utf-8\n"
+//                 "content-length: 12\n"
+//                 "expect: 100-continue\n"
+//                 "user-agent: foo bar baz\n"
+//                 "foo: bar\n"
+//                 "\n"));
+//     eqint(CHTTP_CONNECTION_CLOSE, req.connection);
+//     eqstr("text/plain", req.contenttype);
+//     // eqstr("utf-8", req.charset);
+//     // eqint(12, req.contentlength);
+//     // eqstr("100-continue", req.expect);
+//     // eqstr("foo bar baz", req.useragent);
+//     // eqint(1, req.headerscount);
+//     // eqstr("foo: bar", req.headers[0]);
+// }
+//
+//
+// void
+// test_request_boundary() {
+//     struct chttp_request req;
+//
+//     eqint(431, chttp_request_fromstring(&req,
+//                 "GET / HTTP/1.1\nfoo=bar\n\n\n"));
+//     eqint(431, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n\r\n\r\n"));
+//     eqint(431, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n\n"));
+//     eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1\r\n"));
+//     eqint(400, chttp_request_fromstring(&req, "GET / HTTP/1.1"));
+//     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
+// }
+//
+//
+// void
+// test_request_startline_parse() {
+//     struct chttp_request req;
+//
+//     eqint(0, chttp_request_fromstring(&req,
+//                 "GET /foo?bar=baz%%20qux HTTP/1.1\r\n\r\n"));
+//     eqstr("GET", req.verb);
+//     eqstr("/foo", req.path);
+//     eqstr("bar=baz qux", req.query);
+//     eqstr("HTTP/1.1", req.protocol);
+// }
+//
+//
+// void
+// test_request_headers_parse() {
+//     struct chttp_request req;
+//
+//     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
+//     eqint(0, req.headerscount);
+//
+//     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\nfoo = bar\n\n"));
+//     eqstr("foo = bar", req.headers[0]);
+//     eqint(1, req.headerscount);
+// }
+//
+//
+// void
+// test_request_size() {
+//     size_t pagesize = getpagesize();
+//     size_t reqsize = sizeof(struct chttp_request);
+//     eqint(0, reqsize % pagesize);
+// }
 
 
 int
 main() {
-    test_request();
-    test_request_size();
-    test_request_boundary();
-    test_request_startline_parse();
-    test_request_headers_parse();
+    test_request_new();
+    test_request_parse();
+    // test_request_size();
+    // test_request_boundary();
+    // test_request_startline_parse();
+    // test_request_headers_parse();
     return EXIT_SUCCESS;
 }

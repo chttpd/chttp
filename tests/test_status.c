@@ -29,10 +29,19 @@
 
 void
 test_status_text() {
-    eqstr("Ok", chttp_status_text(200));
-    eqstr("Bad Request", chttp_status_text(400));
-    eqstr("Not Found", chttp_status_text(404));
-    isnull(chttp_status_text(199));
+    int i;
+
+    for (i = 0; i < 200; i++) {
+        isnull(chttp_status_text(i));
+    }
+    eqstr("Ok", chttp_status_text(CHTTP_STATUS_200_OK));
+    eqstr("Bad Request", chttp_status_text(CHTTP_STATUS_400_BADREQUEST));
+    eqstr("Not Found", chttp_status_text(CHTTP_STATUS_404_NOTFOUND));
+    eqstr("Internal Server Error",
+            chttp_status_text(CHTTP_STATUS_500_INTERNALSERVERERROR));
+    for (i = 600; i < 1000; i++) {
+        isnull(chttp_status_text(i));
+    }
 }
 
 

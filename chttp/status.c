@@ -23,10 +23,16 @@
 #include "status.h"
 
 
-static const char * _statuses[] = {
+/* static allocation in standard C is always zero-filled, so this is safe to
+ * make unknown statuses with NULL status texts */
+static const char * _statuses[1000] = {
     [CHTTP_STATUS_200_OK] = "Ok",
     [CHTTP_STATUS_400_BADREQUEST] = "Bad Request",
     [CHTTP_STATUS_404_NOTFOUND] = "Not Found",
+    [CHTTP_STATUS_414_URITOOLONG] = "URI Too Long",
+    [CHTTP_STATUS_431_REQUESTHEADERFIELDSTOOLARGE] =
+        "Request Header Fields Too Large",
+    [CHTTP_STATUS_500_INTERNALSERVERERROR] = "Internal Server Error",
 };
 
 

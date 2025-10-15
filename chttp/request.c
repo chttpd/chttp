@@ -110,12 +110,12 @@ _headers_parse(struct chttp_request *r, char *headers) {
 
         if (!token[0]) {
             /* zero length header found */
-            return 400;
+            return CHTTP_STATUS_400_BADREQUEST;;
         }
 
         ret = _header_known(r, token);
         if (ret == -1) {
-            return 400;
+            return CHTTP_STATUS_400_BADREQUEST;;
         }
 
         if (ret == 0) {
@@ -130,7 +130,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
     }
 
     if (saveptr[0]) {
-        return 400;
+        return CHTTP_STATUS_400_BADREQUEST;;
     }
 
     for (i = 0; i < count; i++) {
@@ -139,7 +139,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
 
     /* apply the store functor to all pointers */
     if (count != store_all(&r->store, count, ptrs, (const char **)hdrs)) {
-        return 500;
+        return CHTTP_STATUS_500_INTERNALSERVERERROR;
     }
 
     r->headerscount = count;
@@ -212,11 +212,11 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
     char *saveptr;
 
     if (size < 16) {
-        return 400;
+        return CHTTP_STATUS_400_BADREQUEST;
     }
 
     if (size > store_avail(r->store)) {
-        return 431;
+        return CHTTP_STATUS_431_REQUESTHEADERFIELDSTOOLARGE;
     }
 
     /* null termination for strtok_r */
@@ -230,11 +230,11 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
     /* startline */
     line = strtok_r(header, "\r\n", &saveptr);
     if (line == NULL) {
-        return 414;
+        return CHTTP_STATUS_414_URITOOLONG;
     }
 
     if (_startline_parse(r, line)) {
-        return 400;
+        return CHTTP_STATUS_400_BADREQUEST;
     }
 
     if (saveptr && (saveptr[0] = '\n')) {

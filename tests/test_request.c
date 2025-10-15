@@ -97,20 +97,6 @@ test_request_headers_parse() {
 }
 
 
-// void
-// test_request() {
-//     struct chttp_request req;
-//
-//     eqint(0, chttp_request_fromstring(&req, "GET / HTTP/1.1\n\n"));
-//
-// }
-// void
-//     struct chttp_request req;
-//
-//
-// }
-
-
 int
 main() {
     test_request_headers_parse();

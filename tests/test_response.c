@@ -28,7 +28,7 @@
 
 
 void
-test_response() {
+test_response_start() {
     char buff[1024];
     int len = sizeof(buff);
     struct chttp_request *r = chttp_request_new(3);
@@ -68,6 +68,6 @@ test_response() {
 
 int
 main() {
-    test_response();
+    test_response_start();
     return EXIT_SUCCESS;
 }

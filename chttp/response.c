@@ -36,14 +36,17 @@ static const char *_proto = "HTTP/1.1";
 // int
 // chttp_response_start(struct chttp_request *r, chttp_status_t status,
 //         const char *text) {
-//     struct chttp_response *resp = &r->resp;
+//     struct chttp_response *resp = &r->response;
 //
 //     memset(resp, 0, sizeof(struct chttp_response));
-//     store_init(&resp->store, resp->storebuff, CHTTP_RESPONSE_STORE_BUFFSIZE);
+//     if (text == NULL) {
+//         text = chttp_status_text(status);
+//     }
 //
 //     if (text == NULL) {
-//         resp->text = chttp_status_text(status);
+//         return -1;
 //     }
+//
 //     else if (store_str(&resp->store, &resp->text, text)) {
 //         return -1;
 //     }

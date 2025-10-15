@@ -29,8 +29,8 @@
 
 void
 test_response_start() {
-    char buff[1024];
-    int len = sizeof(buff);
+    // char buff[1024];
+    // int len = sizeof(buff);
     struct chttp_request *r = chttp_request_new(3);
     isnotnull(r);
 

@@ -47,7 +47,8 @@ static const char *_proto = "HTTP/1.1";
 //         return -1;
 //     }
 //
-//     else if (store_str(&resp->store, &resp->text, text)) {
+//     if (store_strf(&r->store, &resp->header, "%s %d %s", _proto, status,
+//                 text)) {
 //         return -1;
 //     }
 //

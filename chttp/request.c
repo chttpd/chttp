@@ -68,13 +68,14 @@ _header_known(struct chttp_request *r, char *header) {
         return 0;
     }
 
-    ret = store_suffixifprefix_ci(&r->store, &r->useragent, header,
+    ret = store_suffixifprefix_ci(&r->store, &r->useragent, NULL, header,
             "user-agent:");
     if (ret <= 0) {
         return ret;
     }
 
-    ret = store_suffixifprefix_ci(&r->store, &r->expect, header, "expect:");
+    ret = store_suffixifprefix_ci(&r->store, &r->expect, NULL, header,
+            "expect:");
     if (ret <= 0) {
         return ret;
     }

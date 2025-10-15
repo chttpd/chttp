@@ -33,7 +33,8 @@ store_allocate(struct chttp_store *lb, size_t size);
 
 
 int
-store_str(struct chttp_store *lb, const char **dst, const char *str);
+store_str(struct chttp_store *lb, const char **dst, size_t *len,
+        const char *str);
 
 
 int
@@ -54,8 +55,8 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
 
 
 int
-store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, char *in,
-        const char *kw);
+store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, size_t *len,
+        char *str, const char *kw);
 
 
 #endif  // CHTTP_STORE_H_

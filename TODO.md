@@ -18,7 +18,7 @@
 - make cpack
 - readme
 - documentation
-
+- https://stackoverflow.com/questions/57334986/why-is-http-version-number-presented-in-both-a-request-line-and-a-status-line
 
 ## References
 - HTTP/1.1 rfc: https://httpwg.org/specs/rfc9113.html

@@ -65,27 +65,34 @@ store_allocate(struct chttp_store *lb, size_t size) {
   * -1 when the available space in the storage is insufficient
   */
 int
-store_str(struct chttp_store *lb, const char **dst, const char *str) {
+store_str(struct chttp_store *lb, const char **dst, size_t *len,
+        const char *str) {
     size_t remaining;
-    size_t size;
+    size_t bytes;
     char *s;
 
     if (str == NULL) {
         *dst = NULL;
+        if (len) {
+            *len = 0;
+        }
         return 0;
     }
 
     remaining = lb->size - lb->len;
-    size = strnlen(str, remaining);
-    if (size == remaining) {
+    bytes = strnlen(str, remaining);
+    if (bytes == remaining) {
         return -1;
     }
 
     s = lb->backend + lb->len;
-    memcpy(s, str, size);
-    s[size] = 0;
-    lb->len += size + 1;
+    memcpy(s, str, bytes);
+    s[bytes] = 0;
+    lb->len += bytes + 1;
     *dst = s;
+    if (len) {
+        *len = bytes;
+    }
     return 0;
 }
 
@@ -197,7 +204,7 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
     int i;
 
     for (i = 0; i < count; i++) {
-        if (store_str(lb, dst[i], src[i])) {
+        if (store_str(lb, dst[i], NULL, src[i])) {
             break;
         }
     }
@@ -215,8 +222,8 @@ store_all(struct chttp_store *lb, int count, const char **dst[],
  *  0 on successfull invokation.
  */
 int
-store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, char *str,
-        const char *kw) {
+store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, size_t *len,
+        char *str, const char *kw) {
     int kwlen;
 
     if (kw == NULL) {
@@ -232,5 +239,5 @@ store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, char *str,
         return 1;
     }
 
-    return store_str(lb, dst, str_trim(str + kwlen, NULL));
+    return store_str(lb, dst, len, str_trim(str + kwlen, NULL));
 }

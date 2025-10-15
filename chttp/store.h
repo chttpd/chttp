@@ -43,11 +43,11 @@ store_strf(struct chttp_store *lb, const char **dst, size_t *len,
 
 
 int
-store_append(struct chttp_store *lb, const char *str);
+store_append(struct chttp_store *lb, size_t *len, const char *str);
 
 
 int
-store_appendf(struct chttp_store *lb, const char *fmt, ...);
+store_appendf(struct chttp_store *lb, size_t *len, const char *fmt, ...);
 
 
 int

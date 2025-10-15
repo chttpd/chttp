@@ -31,25 +31,28 @@ test_store_appendf() {
     char backend[BUFFSIZE];
     struct chttp_store b;
     const char *dst;
+    size_t len;
 
     store_init(&b, backend, BUFFSIZE);
 
-    eqint(-1, store_appendf(&b, "foo"));
+    eqint(-1, store_appendf(&b, NULL, "foo"));
     eqint(0, b.len);
 
     eqint(0, store_str(&b, &dst, NULL, "foo bar"));
     eqstr("foo bar", dst);
     eqint(8, b.len);
 
-    eqint(0, store_appendf(&b, " %s", "baz"));
+    eqint(0, store_appendf(&b, &len, " %s", "baz"));
     eqstr("foo bar baz", dst);
     eqint(12, b.len);
+    eqint(4, len);
 
-    eqint(0, store_appendf(&b, " %s", "qux"));
+    eqint(0, store_appendf(&b, &len, " %s", "qux"));
     eqstr("foo bar baz qux", dst);
     eqint(16, b.len);
+    eqint(4, len);
 
-    eqint(-1, store_appendf(&b, "x"));
+    eqint(-1, store_appendf(&b, NULL, "x"));
     eqstr("foo bar baz qux", dst);
     eqint(16, b.len);
 }
@@ -85,25 +88,29 @@ test_store_append() {
     char backend[BUFFSIZE];
     struct chttp_store b;
     const char *dst;
+    size_t len;
 
     store_init(&b, backend, BUFFSIZE);
 
-    eqint(-1, store_append(&b, "foo"));
+    eqint(-1, store_append(&b, NULL, "foo"));
     eqint(0, b.len);
 
-    eqint(0, store_str(&b, &dst, NULL, "foo bar"));
+    eqint(0, store_str(&b, &dst, &len, "foo bar"));
     eqstr("foo bar", dst);
     eqint(8, b.len);
+    eqint(7, len);
 
-    eqint(0, store_append(&b, " baz"));
+    eqint(0, store_append(&b, &len, " baz"));
     eqstr("foo bar baz", dst);
     eqint(12, b.len);
+    eqint(4, len);
 
-    eqint(0, store_append(&b, " qux"));
+    eqint(0, store_append(&b, &len, " qux"));
     eqstr("foo bar baz qux", dst);
     eqint(16, b.len);
+    eqint(4, len);
 
-    eqint(-1, store_append(&b, "x"));
+    eqint(-1, store_append(&b, NULL, "x"));
     eqstr("foo bar baz qux", dst);
     eqint(16, b.len);
 }
@@ -114,6 +121,7 @@ test_store_suffixifprefix_ci() {
     char backend[BUFFSIZE];
     struct chttp_store b;
     const char *dst;
+    size_t len;
 
     store_init(&b, backend, BUFFSIZE);
 
@@ -122,15 +130,19 @@ test_store_suffixifprefix_ci() {
 
     eqint(1, store_suffixifprefix_ci(&b, &dst, NULL, "foo bar", "bar"));
 
-    eqint(0, store_suffixifprefix_ci(&b, &dst, NULL, "foo bar baz", "foo "));
+    eqint(0, store_suffixifprefix_ci(&b, &dst, &len, "foo bar baz", "foo "));
     eqptr(backend, dst);
     eqstr("bar baz", dst);
     eqint(8, b.len);
-    eqint(0, store_suffixifprefix_ci(&b, &dst, NULL, "bar baz", "bar"));
+    eqint(7, len);
+
+    eqint(0, store_suffixifprefix_ci(&b, &dst, &len, "bar baz", "bar"));
+    eqint(3, len);
 
     /* auto trim */
-    eqint(0, store_suffixifprefix_ci(&b, &dst, NULL, "foo bar", "foo"));
+    eqint(0, store_suffixifprefix_ci(&b, &dst, &len, "foo bar", "foo"));
     eqstr("bar", dst);
+    eqint(3, len);
 
     /* insufficient space */
     eqint(-1, store_suffixifprefix_ci(&b, &dst, NULL, "foo bar", "foo"));
@@ -228,10 +240,10 @@ test_store_init() {
 
 int
 main() {
-    // test_store_suffixifprefix_ci();
-    // test_store_all();
-    // test_store_appendf();
-    // test_store_append();
+    test_store_suffixifprefix_ci();
+    test_store_all();
+    test_store_appendf();
+    test_store_append();
     test_store_strf();
     test_store_str();
     test_store_allocate();

@@ -141,12 +141,15 @@ store_strf(struct chttp_store *lb, const char **dst, size_t *len,
   *    item is stored yet.
   */
 int
-store_append(struct chttp_store *lb, const char *str) {
+store_append(struct chttp_store *lb, size_t *len, const char *str) {
     size_t remaining;
     size_t size;
     char *s;
 
     if (str == NULL) {
+        if (len) {
+            *len = 0;
+        }
         return 0;
     }
 
@@ -164,6 +167,9 @@ store_append(struct chttp_store *lb, const char *str) {
     memcpy(s, str, size);
     s[size] = 0;
     lb->len += size;
+    if (len) {
+        *len = size;
+    }
     return 0;
 }
 
@@ -175,13 +181,16 @@ store_append(struct chttp_store *lb, const char *str) {
   *    item is stored yet.
   */
 int
-store_appendf(struct chttp_store *lb, const char *fmt, ...) {
+store_appendf(struct chttp_store *lb, size_t *len, const char *fmt, ...) {
     va_list args;
     size_t remaining;
     int bytes;
     char *s;
 
     if (fmt == NULL) {
+        if (len) {
+            *len = 0;
+        }
         return 0;
     }
 
@@ -201,6 +210,9 @@ store_appendf(struct chttp_store *lb, const char *fmt, ...) {
     }
 
     lb->len += bytes;
+    if (len) {
+        *len = bytes;
+    }
     return 0;
 }
 

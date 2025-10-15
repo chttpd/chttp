@@ -84,8 +84,7 @@ test_request_headers_parse() {
                 "content-length: 12\r\n"
                 "expect: 100-continue\r\n"
                 "user-agent: foo bar baz\r\n"
-                "foo: bar\r\n"
-                ));
+                "foo: bar\r\n"));
     eqstr("text/plain", r->contenttype);
     eqstr("utf-8", r->charset);
     eqint(12, r->contentlength);

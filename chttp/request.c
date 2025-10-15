@@ -111,12 +111,12 @@ _headers_parse(struct chttp_request *r, char *headers) {
 
         if (!token[0]) {
             /* zero length header found */
-            return CHTTP_STATUS_400_BADREQUEST;;
+            return CHTTP_STATUS_400_BADREQUEST;
         }
 
         ret = _header_known(r, token);
         if (ret == -1) {
-            return CHTTP_STATUS_400_BADREQUEST;;
+            return CHTTP_STATUS_400_BADREQUEST;
         }
 
         if (ret == 0) {
@@ -131,7 +131,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
     }
 
     if (saveptr[0]) {
-        return CHTTP_STATUS_400_BADREQUEST;;
+        return CHTTP_STATUS_400_BADREQUEST;
     }
 
     for (i = 0; i < count; i++) {

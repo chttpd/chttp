@@ -178,7 +178,7 @@ test_store_str() {
     eqptr(backend + 8, dst);
     eqstr("baz", dst);
     eqint(12, b.len);
-    eqint(4, len);
+    eqint(3, len);
 
     eqint(0, store_str(&b, &dst, &len, "qux"));
     eqstr("qux", dst);

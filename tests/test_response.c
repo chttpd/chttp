@@ -33,39 +33,45 @@ test_response_start() {
     struct chttp_request *r = chttp_request_new(3);
     isnotnull(r);
 
+    memset(&r->response, 0, sizeof(r->response));
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
     eqint(19, chttp_response_tobuff(r, buff, sizeof(buff)));
     eqnstr("HTTP/1.1 200 Ok\r\n\r\n", buff, 19);
 
-    // chttp_response_start(r, 200, NULL);
-    // chttp_response_contenttype(r, "text/plain);
-    // chttp_response_header(r, "foo", "bar);
-    // chttp_response_body(r, "foo %s", "bar");
-    // chttp_response_tobuff(r, "foo %s", "bar");
+    memset(&r->response, 0, sizeof(r->response));
+    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, "Foo"));
+    eqint(20, chttp_response_tobuff(r, buff, sizeof(buff)));
+    eqnstr("HTTP/1.1 200 Foo\r\n\r\n", buff, 20);
 
-    // eqint(0, chttp_response_header(&resp, "foo = %s", "bar"));
-    // resp.contentlength = 0;
-    // eqint(0, chttp_response_contenttype(&resp, "text/plain", "utf-8"));
-    // len = chttp_response_tobuff(&resp, buff, &bufflen);
-    // eqint(90, len);
-    // eqstr("HTTP/1.1 200 Ok\r\n"
-    //         "Content-Length: 0\r\n"
-    //         "Content-Type: text/plain; charset=utf-8\r\n"
-    //         "foo = bar\r\n\r\n", buff);
+    eqint(-1, chttp_response_start(r, 0, NULL));
 
-    // eqint(9, chttp_response_write(&resp, "foo %s\r\n", "bar"));
-    // len = chttp_response_tobuff(&resp, buff, &bufflen);
-    // eqint(99, len);
-    // eqnstr("HTTP/1.1 200 Ok\r\n"
-    //         "Content-Length: 9\r\n"
-    //         "Content-Type: text/plain; charset=utf-8\r\n"
-    //         "foo = bar\r\n\r\n"
-    //         "foo bar\r\n", buff, len);
+    free(r);
+}
+
+
+void
+test_response_headers() {
+    char buff[1024];
+    struct chttp_request *r = chttp_request_new(3);
+    isnotnull(r);
+
+    eqint(-1, chttp_response_header(r, "foo = %s", "bar"));
+
+    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
+    eqint(0, chttp_response_header(r, "foo = %s", "bar"));
+    eqint(0, chttp_response_contenttype(r, "text/plain", "utf-8"));
+    eqint(71, chttp_response_tobuff(r, buff, sizeof(buff)));
+    eqnstr("HTTP/1.1 200 Ok\r\n"
+            "foo = bar\r\n"
+            "Content-Type: text/plain; charset=utf-8\r\n\r\n", buff, 71);
+
+    free(r);
 }
 
 
 int
 main() {
+    test_response_headers();
     test_response_start();
     return EXIT_SUCCESS;
 }

@@ -39,7 +39,6 @@ chttp_response_start(struct chttp_request *r, chttp_status_t status,
     struct chttp_response *resp = &r->response;
     size_t len;
 
-    memset(resp, 0, sizeof(struct chttp_response));
     if (text == NULL) {
         text = chttp_status_text(status);
     }
@@ -58,11 +57,64 @@ chttp_response_start(struct chttp_request *r, chttp_status_t status,
 }
 
 
+int
+chttp_response_header(struct chttp_request *r, const char *fmt, ...) {
+    struct chttp_response *resp = &r->response;
+    va_list args;
+    int ret;
+    size_t len;
+
+    if (fmt == NULL) {
+        return -1;
+    }
+
+    va_start(args, fmt);
+    ret = store_vappendf(&r->store, &len, fmt, args);
+    va_end(args);
+
+    if (ret) {
+        return -1;
+    }
+
+    resp->headerlen += len;
+    if (store_append(&r->store, &len, "\r\n")) {
+        return -1;
+    }
+
+    resp->headerlen += len;
+    return 0;
+}
+
+
+int
+chttp_response_contenttype(struct chttp_request *r, const char *type,
+        const char *charset) {
+    if (type == NULL) {
+        return -1;
+    }
+
+    if (charset) {
+        if (chttp_response_header(r, "Content-Type: %s; charset=%s", type,
+                    charset)) {
+            return -1;
+        }
+
+        return 0;
+    }
+
+    if (chttp_response_header(r, "Content-Type: %s", type)) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
 ssize_t
 chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen) {
     size_t len;
     struct chttp_response *resp = &r->response;
-    size_t totallen = resp->headerlen + resp->bodylen + 2;
+    size_t totallen = resp->headerlen + 2;
 
     if (totallen > bufflen) {
         return -1;
@@ -76,126 +128,3 @@ chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen) {
 
     return len;
 }
-
-
-// int
-// chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
-//     int i;
-//     struct buffwriter p = {buff, *len, 0};
-//
-//     if (buffwriter_printf(&p, "%s %d %s\r\n", resp->protocol, resp->status,
-//             resp->text) == -1) {
-//         return -1;
-//     }
-//
-//     /* known headers */
-//     if ((resp->contentlength > -1) && (buffwriter_printf(&p,
-//                     "Content-Length: %ld\r\n", resp->contentlength) == -1)) {
-//         return -1;
-//     }
-//
-//     /* content/mime type */
-//     if (resp->contenttype) {
-//         if (buffwriter_printf(&p, "Content-Type: %s",
-//                     resp->contenttype) == -1) {
-//             return -1;
-//         }
-//
-//         if ((resp->charset) && (buffwriter_printf(&p, "; charset=%s",
-//                         resp->charset) == -1)) {
-//             return -1;
-//         }
-//
-//         if (buffwriter_printf(&p, "\r\n") == -1) {
-//             return -1;
-//         }
-//     }
-//
-//     /* headers */
-//     for (i = 0; i < resp->headerscount; i++) {
-//         if (buffwriter_printf(&p, "%s\r\n", resp->headers[i]) == -1) {
-//             return -1;
-//         }
-//     }
-//
-//     /* close the http head */
-//     if (buffwriter_write(&p, "\r\n", 2) == -1) {
-//         return -1;
-//     }
-//
-//     /* content */
-//     if (resp->contentlength > 0) {
-//         if (resp->content == NULL) {
-//             return -1;
-//         }
-//
-//         if (buffwriter_write(&p, resp->content, resp->contentlength)  == -1) {
-//             return -1;
-//         }
-//     }
-//
-//     *len = p.used;
-//     return 0;
-// }
-// int
-// chttp_response_header(struct chttp_response *resp, const char *fmt, ...) {
-//     va_list args;
-//     const char *h;
-//     int wrote;
-//
-//     // TODO: config
-//     char buff[1024];
-//
-//     va_start(args, fmt);
-//     wrote = vsnprintf(buff, sizeof(buff), fmt, args);
-//     va_end(args);
-//
-//     if (wrote >= sizeof(buff)) {
-//         return -1;
-//     }
-//
-//     if (store_str(&resp->store, &h, buff)) {
-//         return -1;
-//     }
-//
-//     resp->headers[resp->headerscount++] = h;
-//     return 0;
-// }
-//
-//
-// int
-// chttp_response_contenttype(struct chttp_response *resp, const char *type,
-//         const char *charset) {
-//     if (store_str(&resp->store, &resp->contenttype, type)) {
-//         return -1;
-//     }
-//
-//     if (charset && store_str(&resp->store, &resp->charset, charset)) {
-//         return -1;
-//     }
-//
-//     return 0;
-// }
-//
-//
-// int
-// chttp_response_write(struct chttp_response *resp, const char *fmt, ...) {
-//     va_list args;
-//     int bytes;
-//     size_t maxlen;
-//
-//     if (resp->content == NULL) {
-//         resp->contentmax = store_avail(&resp->store);
-//         resp->content = store_allocate(&resp->store, resp->contentmax);
-//         resp->contentlength = 0;
-//     }
-//
-//     maxlen = resp->contentmax - resp->contentlength;
-//
-//     va_start(args, fmt);
-//     bytes = vsnprintf(resp->content + resp->contentlength, maxlen, fmt, args);
-//     va_end(args);
-//
-//     resp->contentlength += bytes;
-//     return bytes;
-// }

@@ -20,6 +20,9 @@
 #define CHTTP_STORE_H_
 
 
+/* standard */
+#include <stdarg.h>
+
 /* local public */
 #include "chttp.h"
 
@@ -44,6 +47,11 @@ store_strf(struct chttp_store *lb, const char **dst, size_t *len,
 
 int
 store_append(struct chttp_store *lb, size_t *len, const char *str);
+
+
+int
+store_vappendf(struct chttp_store *lb, size_t *len, const char *fmt,
+        va_list args);
 
 
 int

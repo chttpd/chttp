@@ -56,9 +56,6 @@ struct chttp_store {
 struct chttp_response {
     const char *header;
     unsigned int headerlen;
-
-    const char *body;
-    unsigned int bodylen;
 };
 
 
@@ -101,6 +98,15 @@ chttp_response_start(struct chttp_request *r, chttp_status_t status,
 
 ssize_t
 chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen);
+
+
+int
+chttp_response_header(struct chttp_request *r, const char *fmt, ...);
+
+
+int
+chttp_response_contenttype(struct chttp_request *r, const char *type,
+        const char *charset);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

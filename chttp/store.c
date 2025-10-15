@@ -130,6 +130,7 @@ store_strf(struct chttp_store *lb, const char **dst, size_t *len,
     if (len) {
         *len = bytes;
     }
+
     return 0;
 }
 
@@ -183,6 +184,19 @@ store_append(struct chttp_store *lb, size_t *len, const char *str) {
 int
 store_appendf(struct chttp_store *lb, size_t *len, const char *fmt, ...) {
     va_list args;
+    int bytes;
+
+    va_start(args, fmt);
+    bytes = store_vappendf(lb, len, fmt, args);
+    va_end(args);
+
+    return bytes;
+}
+
+
+int
+store_vappendf(struct chttp_store *lb, size_t *len, const char *fmt,
+        va_list args) {
     size_t remaining;
     int bytes;
     char *s;
@@ -200,10 +214,8 @@ store_appendf(struct chttp_store *lb, size_t *len, const char *fmt, ...) {
 
     s = lb->backend + (lb->len - 1);
     remaining = lb->size - (lb->len - 1);
-    va_start(args, fmt);
-    bytes = vsnprintf(s, remaining, fmt, args);
-    va_end(args);
 
+    bytes = vsnprintf(s, remaining, fmt, args);
     if (bytes >= remaining) {
         /* output truncated */
         return -1;

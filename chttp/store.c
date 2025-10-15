@@ -88,6 +88,40 @@ store_str(struct chttp_store *lb, const char **dst, const char *str) {
 }
 
 
+/** append the str into the last stored field.
+  * return:
+  *  0 on successfull invokation.
+  * -1 when the available space in the storage is insufficient or there is no
+  *    item is stored yet.
+  */
+int
+store_append(struct chttp_store *lb, const char *str) {
+    size_t remaining;
+    size_t size;
+    char *s;
+
+    if (str == NULL) {
+        return 0;
+    }
+
+    if (lb->len == 0) {
+        return -1;
+    }
+
+    remaining = lb->size - (lb->len - 1);
+    size = strnlen(str, remaining);
+    if (size == remaining) {
+        return -1;
+    }
+
+    s = lb->backend + (lb->len - 1);
+    memcpy(s, str, size);
+    s[size] = 0;
+    lb->len += size;
+    return 0;
+}
+
+
 int
 store_all(struct chttp_store *lb, int count, const char **dst[],
         const char *src[]) {

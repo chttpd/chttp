@@ -60,17 +60,21 @@ test_store_strf() {
     char backend[BUFFSIZE];
     struct chttp_store b;
     const char *dst = "foo";
+    size_t len;
 
     store_init(&b, backend, sizeof(backend));
 
-    eqint(0, store_strf(&b, &dst, NULL));
+    eqint(0, store_strf(&b, &dst, NULL, NULL));
+    eqint(0, store_strf(&b, &dst, &len, NULL));
     isnull(dst);
+    eqint(0, len);
 
-    eqint(0, store_strf(&b, &dst, "foo %s", "bar"));
+    eqint(0, store_strf(&b, &dst, &len, "foo %s", "bar"));
     eqstr("foo bar", dst);
     eqint(8, b.len);
+    eqint(7, len);
 
-    eqint(-1, store_strf(&b, &dst, "baz qux %s", "quux"));
+    eqint(-1, store_strf(&b, &dst, NULL, "baz qux %s", "quux"));
     eqstr("foo bar", dst);
     eqint(8, b.len);
 }
@@ -228,7 +232,7 @@ main() {
     // test_store_all();
     // test_store_appendf();
     // test_store_append();
-    // test_store_strf();
+    test_store_strf();
     test_store_str();
     test_store_allocate();
     test_store_init();

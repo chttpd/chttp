@@ -98,7 +98,8 @@ store_str(struct chttp_store *lb, const char **dst, size_t *len,
 
 
 int
-store_strf(struct chttp_store *lb, const char **dst, const char *fmt, ...) {
+store_strf(struct chttp_store *lb, const char **dst, size_t *len,
+        const char *fmt, ...) {
     int bytes;
     va_list args;
     char *s;
@@ -106,6 +107,9 @@ store_strf(struct chttp_store *lb, const char **dst, const char *fmt, ...) {
 
     if (fmt == NULL) {
         *dst = NULL;
+        if (len) {
+            *len = 0;
+        }
         return 0;
     }
 
@@ -123,6 +127,9 @@ store_strf(struct chttp_store *lb, const char **dst, const char *fmt, ...) {
 
     lb->len += bytes + 1;
     *dst = s;
+    if (len) {
+        *len = bytes;
+    }
     return 0;
 }
 

@@ -38,7 +38,8 @@ store_str(struct chttp_store *lb, const char **dst, size_t *len,
 
 
 int
-store_strf(struct chttp_store *lb, const char **dst, const char *fmt, ...);
+store_strf(struct chttp_store *lb, const char **dst, size_t *len,
+        const char *fmt, ...);
 
 
 int

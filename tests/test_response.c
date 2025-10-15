@@ -29,15 +29,13 @@
 
 void
 test_response_start() {
-    // char buff[1024];
-    // int len = sizeof(buff);
+    char buff[1024];
     struct chttp_request *r = chttp_request_new(3);
     isnotnull(r);
 
-    // eqint(0, chttp_response_start(r, 200, NULL));
-    // eqint(0, chttp_response_tobuff(r, buff, &len));
-    // eqint(19, len);
-    // eqstr("HTTP/1.1 200 Ok\r\n\r\n", buff);
+    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
+    eqint(19, chttp_response_tobuff(r, buff, sizeof(buff)));
+    eqnstr("HTTP/1.1 200 Ok\r\n\r\n", buff, 19);
 
     // chttp_response_start(r, 200, NULL);
     // chttp_response_contenttype(r, "text/plain);

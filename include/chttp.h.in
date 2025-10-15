@@ -54,10 +54,10 @@ struct chttp_store {
 
 
 struct chttp_response {
-    char *header;
+    const char *header;
     unsigned int headerlen;
 
-    char *body;
+    const char *body;
     unsigned int bodylen;
 };
 
@@ -92,6 +92,15 @@ chttp_request_new(uint8_t pages);
 
 chttp_status_t
 chttp_request_parse(struct chttp_request *r, char *header, size_t size);
+
+
+int
+chttp_response_start(struct chttp_request *r, chttp_status_t status,
+        const char *text);
+
+
+ssize_t
+chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

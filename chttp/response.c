@@ -33,35 +33,110 @@
 static const char *_proto = "HTTP/1.1";
 
 
+int
+chttp_response_start(struct chttp_request *r, chttp_status_t status,
+        const char *text) {
+    struct chttp_response *resp = &r->response;
+    size_t len;
+
+    memset(resp, 0, sizeof(struct chttp_response));
+    if (text == NULL) {
+        text = chttp_status_text(status);
+    }
+
+    if (text == NULL) {
+        return -1;
+    }
+
+    if (store_strf(&r->store, &resp->header, &len, "%s %d %s\r\n", _proto,
+                status, text)) {
+        return -1;
+    }
+
+    resp->headerlen += len;
+    return 0;
+}
+
+
+ssize_t
+chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen) {
+    size_t len;
+    struct chttp_response *resp = &r->response;
+    size_t totallen = resp->headerlen + resp->bodylen + 2;
+
+    if (totallen > bufflen) {
+        return -1;
+    }
+
+    memcpy(buff, resp->header, resp->headerlen);
+    len = resp->headerlen;
+
+    memcpy(buff + len, "\r\n", 2);
+    len += 2;
+
+    return len;
+}
+
+
 // int
-// chttp_response_start(struct chttp_request *r, chttp_status_t status,
-//         const char *text) {
-//     struct chttp_response *resp = &r->response;
+// chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
+//     int i;
+//     struct buffwriter p = {buff, *len, 0};
 //
-//     memset(resp, 0, sizeof(struct chttp_response));
-//     if (text == NULL) {
-//         text = chttp_status_text(status);
-//     }
-//
-//     if (text == NULL) {
+//     if (buffwriter_printf(&p, "%s %d %s\r\n", resp->protocol, resp->status,
+//             resp->text) == -1) {
 //         return -1;
 //     }
 //
-//     if (store_strf(&r->store, &resp->header, "%s %d %s", _proto, status,
-//                 text)) {
+//     /* known headers */
+//     if ((resp->contentlength > -1) && (buffwriter_printf(&p,
+//                     "Content-Length: %ld\r\n", resp->contentlength) == -1)) {
 //         return -1;
 //     }
 //
-//     if (resp->text == NULL) {
+//     /* content/mime type */
+//     if (resp->contenttype) {
+//         if (buffwriter_printf(&p, "Content-Type: %s",
+//                     resp->contenttype) == -1) {
+//             return -1;
+//         }
+//
+//         if ((resp->charset) && (buffwriter_printf(&p, "; charset=%s",
+//                         resp->charset) == -1)) {
+//             return -1;
+//         }
+//
+//         if (buffwriter_printf(&p, "\r\n") == -1) {
+//             return -1;
+//         }
+//     }
+//
+//     /* headers */
+//     for (i = 0; i < resp->headerscount; i++) {
+//         if (buffwriter_printf(&p, "%s\r\n", resp->headers[i]) == -1) {
+//             return -1;
+//         }
+//     }
+//
+//     /* close the http head */
+//     if (buffwriter_write(&p, "\r\n", 2) == -1) {
 //         return -1;
 //     }
 //
-//     resp->protocol = _proto;
-//     resp->status = status;
+//     /* content */
+//     if (resp->contentlength > 0) {
+//         if (resp->content == NULL) {
+//             return -1;
+//         }
+//
+//         if (buffwriter_write(&p, resp->content, resp->contentlength)  == -1) {
+//             return -1;
+//         }
+//     }
+//
+//     *len = p.used;
 //     return 0;
 // }
-
-
 // int
 // chttp_response_header(struct chttp_response *resp, const char *fmt, ...) {
 //     va_list args;
@@ -123,65 +198,4 @@ static const char *_proto = "HTTP/1.1";
 //
 //     resp->contentlength += bytes;
 //     return bytes;
-// }
-//
-//
-// int
-// chttp_response_tobuff(struct chttp_response *resp, char *buff, int *len) {
-//     int i;
-//     struct buffwriter p = {buff, *len, 0};
-//
-//     if (buffwriter_printf(&p, "%s %d %s\r\n", resp->protocol, resp->status,
-//             resp->text) == -1) {
-//         return -1;
-//     }
-//
-//     /* known headers */
-//     if ((resp->contentlength > -1) && (buffwriter_printf(&p,
-//                     "Content-Length: %ld\r\n", resp->contentlength) == -1)) {
-//         return -1;
-//     }
-//
-//     /* content/mime type */
-//     if (resp->contenttype) {
-//         if (buffwriter_printf(&p, "Content-Type: %s",
-//                     resp->contenttype) == -1) {
-//             return -1;
-//         }
-//
-//         if ((resp->charset) && (buffwriter_printf(&p, "; charset=%s",
-//                         resp->charset) == -1)) {
-//             return -1;
-//         }
-//
-//         if (buffwriter_printf(&p, "\r\n") == -1) {
-//             return -1;
-//         }
-//     }
-//
-//     /* headers */
-//     for (i = 0; i < resp->headerscount; i++) {
-//         if (buffwriter_printf(&p, "%s\r\n", resp->headers[i]) == -1) {
-//             return -1;
-//         }
-//     }
-//
-//     /* close the http head */
-//     if (buffwriter_write(&p, "\r\n", 2) == -1) {
-//         return -1;
-//     }
-//
-//     /* content */
-//     if (resp->contentlength > 0) {
-//         if (resp->content == NULL) {
-//             return -1;
-//         }
-//
-//         if (buffwriter_write(&p, resp->content, resp->contentlength)  == -1) {
-//             return -1;
-//         }
-//     }
-//
-//     *len = p.used;
-//     return 0;
 // }

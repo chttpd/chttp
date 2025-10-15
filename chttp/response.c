@@ -36,8 +36,9 @@ static const char *_proto = "HTTP/1.1";
 // int
 // chttp_response_start(struct chttp_request *r, chttp_status_t status,
 //         const char *text) {
-//     memset(resp, 0, sizeof(struct chttp_response));
+//     struct chttp_response *resp = &r->resp;
 //
+//     memset(resp, 0, sizeof(struct chttp_response));
 //     store_init(&resp->store, resp->storebuff, CHTTP_RESPONSE_STORE_BUFFSIZE);
 //
 //     if (text == NULL) {
@@ -55,8 +56,8 @@ static const char *_proto = "HTTP/1.1";
 //     resp->status = status;
 //     return 0;
 // }
-//
-//
+
+
 // int
 // chttp_response_header(struct chttp_response *resp, const char *fmt, ...) {
 //     va_list args;

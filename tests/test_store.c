@@ -27,12 +27,65 @@
 
 
 void
+test_store_appendf() {
+    char backend[BUFFSIZE];
+    struct chttp_store b;
+    const char *dst;
+
+    store_init(&b, backend, BUFFSIZE);
+
+    eqint(-1, store_appendf(&b, "foo"));
+    eqint(0, b.len);
+
+    eqint(0, store_str(&b, &dst, "foo bar"));
+    eqstr("foo bar", dst);
+    eqint(8, b.len);
+
+    eqint(0, store_appendf(&b, " %s", "baz"));
+    eqstr("foo bar baz", dst);
+    eqint(12, b.len);
+
+    eqint(0, store_appendf(&b, " %s", "qux"));
+    eqstr("foo bar baz qux", dst);
+    eqint(16, b.len);
+
+    eqint(-1, store_appendf(&b, "x"));
+    eqstr("foo bar baz qux", dst);
+    eqint(16, b.len);
+}
+
+
+void
+test_store_strf() {
+    char backend[BUFFSIZE];
+    struct chttp_store b;
+    const char *dst = "foo";
+
+    store_init(&b, backend, sizeof(backend));
+
+    eqint(0, store_strf(&b, &dst, NULL));
+    isnull(dst);
+
+    eqint(0, store_strf(&b, &dst, "foo %s", "bar"));
+    eqstr("foo bar", dst);
+    eqint(8, b.len);
+
+    eqint(-1, store_strf(&b, &dst, "baz qux %s", "quux"));
+    eqstr("foo bar", dst);
+    eqint(8, b.len);
+}
+
+
+void
 test_store_append() {
     char backend[BUFFSIZE];
     struct chttp_store b;
     const char *dst;
 
     store_init(&b, backend, BUFFSIZE);
+
+    eqint(-1, store_append(&b, "foo"));
+    eqint(0, b.len);
 
     eqint(0, store_str(&b, &dst, "foo bar"));
     eqstr("foo bar", dst);
@@ -165,9 +218,11 @@ test_store_init() {
 
 int
 main() {
-    test_store_append();
     test_store_suffixifprefix_ci();
     test_store_all();
+    test_store_appendf();
+    test_store_append();
+    test_store_strf();
     test_store_str();
     test_store_allocate();
     test_store_init();

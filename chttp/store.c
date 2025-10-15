@@ -19,7 +19,9 @@
 
 
 /* standard */
+#include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 /* local private */
 #include "str.h"
@@ -88,6 +90,36 @@ store_str(struct chttp_store *lb, const char **dst, const char *str) {
 }
 
 
+int
+store_strf(struct chttp_store *lb, const char **dst, const char *fmt, ...) {
+    int bytes;
+    va_list args;
+    char *s;
+    size_t remaining;
+
+    if (fmt == NULL) {
+        *dst = NULL;
+        return 0;
+    }
+
+    s = lb->backend + lb->len;
+    remaining = lb->size - lb->len;
+
+    va_start(args, fmt);
+    bytes = vsnprintf(s, remaining, fmt, args);
+    va_end(args);
+
+    if (bytes >= remaining) {
+        /* output truncated */
+        return -1;
+    }
+
+    lb->len += bytes + 1;
+    *dst = s;
+    return 0;
+}
+
+
 /** append the str into the last stored field.
   * return:
   *  0 on successfull invokation.
@@ -118,6 +150,43 @@ store_append(struct chttp_store *lb, const char *str) {
     memcpy(s, str, size);
     s[size] = 0;
     lb->len += size;
+    return 0;
+}
+
+
+/** format and append the str into the last stored field.
+  * return:
+  *  0 on successfull invokation.
+  * -1 when the available space in the storage is insufficient or there is no
+  *    item is stored yet.
+  */
+int
+store_appendf(struct chttp_store *lb, const char *fmt, ...) {
+    va_list args;
+    size_t remaining;
+    int bytes;
+    char *s;
+
+    if (fmt == NULL) {
+        return 0;
+    }
+
+    if (lb->len == 0) {
+        return -1;
+    }
+
+    s = lb->backend + (lb->len - 1);
+    remaining = lb->size - (lb->len - 1);
+    va_start(args, fmt);
+    bytes = vsnprintf(s, remaining, fmt, args);
+    va_end(args);
+
+    if (bytes >= remaining) {
+        /* output truncated */
+        return -1;
+    }
+
+    lb->len += bytes;
     return 0;
 }
 

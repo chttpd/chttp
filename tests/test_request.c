@@ -36,7 +36,7 @@ test_request_new() {
     r = chttp_request_new(3);
     isnotnull(r);
     eqint(-1, r->contentlength);
-    free(r);
+    chttp_request_free(r);
 }
 
 
@@ -62,7 +62,7 @@ test_request_startline() {
     eqstr("/foo/bar", r->path);
 
     eqint(400, requestf(r, "GET /foo/bar HTTP/1.1\r\n\r\n"));
-    free(r);
+    chttp_request_free(r);
 }
 
 
@@ -93,7 +93,7 @@ test_request_headers_parse() {
     eqint(1, r->headerscount);
     eqstr("foo: bar", r->headers[0]);
 
-    free(r);
+    chttp_request_free(r);
 }
 
 

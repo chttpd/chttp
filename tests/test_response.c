@@ -35,23 +35,24 @@ test_response_start() {
 
     memset(&r->response, 0, sizeof(r->response));
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
-    eqint(19, chttp_response_tobuff(r, buff, sizeof(buff)));
+    eqint(19, chttp_response_header_tobuff(r, buff, sizeof(buff)));
     eqnstr("HTTP/1.1 200 Ok\r\n\r\n", buff, 19);
 
     memset(&r->response, 0, sizeof(r->response));
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, "Foo"));
-    eqint(20, chttp_response_tobuff(r, buff, sizeof(buff)));
+    eqint(20, chttp_response_header_tobuff(r, buff, sizeof(buff)));
     eqnstr("HTTP/1.1 200 Foo\r\n\r\n", buff, 20);
 
     eqint(-1, chttp_response_start(r, 0, NULL));
 
-    free(r);
+    chttp_request_free(r);
 }
 
 
 void
 test_response_headers() {
     char buff[1024];
+    ssize_t len;
     struct chttp_request *r = chttp_request_new(3);
     isnotnull(r);
 
@@ -60,17 +61,41 @@ test_response_headers() {
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
     eqint(0, chttp_response_header(r, "foo = %s", "bar"));
     eqint(0, chttp_response_contenttype(r, "text/plain", "utf-8"));
-    eqint(71, chttp_response_tobuff(r, buff, sizeof(buff)));
+    len = chttp_response_header_tobuff(r, buff, sizeof(buff));
     eqnstr("HTTP/1.1 200 Ok\r\n"
             "foo = bar\r\n"
-            "Content-Type: text/plain; charset=utf-8\r\n\r\n", buff, 71);
+            "Content-Type: text/plain; charset=utf-8\r\n\r\n", buff, len);
 
-    free(r);
+    chttp_request_free(r);
+}
+
+
+void
+test_response_content() {
+    char buff[1024];
+    ssize_t len;
+    struct chttp_request *r = chttp_request_new(3);
+    isnotnull(r);
+
+    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
+    eqint(0, chttp_response_content_allocate(r, 128));
+    eqint(7, chttp_response_content_write(r, "foo %s", "bar"));
+    eqint(9, chttp_response_content_write(r, " baz %s", "quux"));
+
+    len = chttp_response_header_tobuff(r, buff, sizeof(buff));
+    eqnstr("HTTP/1.1 200 Ok\r\n"
+            "Content-Length: 16\r\n\r\n",
+            buff, len);
+    eqnstr("foo bar baz quux", r->response.content,
+            r->response.contentlength);
+
+    chttp_request_free(r);
 }
 
 
 int
 main() {
+    test_response_content();
     test_response_headers();
     test_response_start();
     return EXIT_SUCCESS;

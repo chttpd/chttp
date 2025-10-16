@@ -203,6 +203,10 @@ chttp_request_new(uint8_t pages) {
     }
 
     store_init(&r->store, r->storebuff, total - sizeof(struct chttp_request));
+
+    /* zero fill */
+    memset(r, 0, ((void *)&r->store) - ((void *)r));
+    r->contentlength = -1;
     return r;
 }
 
@@ -223,11 +227,6 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
     /* null termination for strtok_r */
     header[size - 1] = 0;
 
-    /* reset the request */
-    memset(r, 0, ((void *)&r->store) - ((void *)r));
-    r->contentlength = -1;
-    r->store.len = 0;
-
     /* startline */
     line = strtok_r(header, "\r\n", &saveptr);
     if (line == NULL) {
@@ -243,4 +242,19 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
     }
 
     return _headers_parse(r, saveptr);
+}
+
+
+int
+chttp_request_free(struct chttp_request *r) {
+    if (r == NULL) {
+        return -1;
+    }
+
+    if (r->response.content) {
+        free(r->response.content);
+    }
+
+    free(r);
+    return 0;
 }

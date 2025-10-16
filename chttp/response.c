@@ -111,11 +111,20 @@ chttp_response_contenttype(struct chttp_request *r, const char *type,
 
 
 ssize_t
-chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen) {
+chttp_response_header_tobuff(struct chttp_request *r, char *buff,
+        size_t bufflen) {
     size_t len;
     struct chttp_response *resp = &r->response;
-    size_t totallen = resp->headerlen + 2;
+    size_t totallen;
 
+    if (resp->content) {
+        if (chttp_response_header(r, "Content-Length: %d",
+                    resp->contentlength)) {
+            return -1;
+        }
+    }
+
+    totallen = resp->headerlen + 2;
     if (totallen > bufflen) {
         return -1;
     }
@@ -127,4 +136,49 @@ chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen) {
     len += 2;
 
     return len;
+}
+
+
+int
+chttp_response_content_allocate(struct chttp_request *r, size_t size) {
+    struct chttp_response *resp = &r->response;
+
+    if (resp->content) {
+        return -1;
+    }
+
+    resp->content = malloc(size);
+    if (resp->content == NULL) {
+        return -1;
+    }
+
+    resp->contentmax = size;
+    resp->contentlength = 0;
+    return 0;
+}
+
+
+ssize_t
+chttp_response_content_write(struct chttp_request *r, const char *fmt, ...) {
+    struct chttp_response *resp = &r->response;
+    va_list args;
+    int bytes;
+    size_t avail;
+
+    if (resp->content == NULL) {
+        return -1;
+    }
+
+    avail = resp->contentmax - resp->contentlength;
+    va_start(args, fmt);
+    bytes = vsnprintf(resp->content + resp->contentlength, avail, fmt, args);
+    va_end(args);
+
+    if (bytes >= avail) {
+        /* output truncated */
+        return -1;
+    }
+
+    resp->contentlength += bytes;
+    return bytes;
 }

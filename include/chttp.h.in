@@ -56,6 +56,10 @@ struct chttp_store {
 struct chttp_response {
     const char *header;
     unsigned int headerlen;
+
+    char *content;
+    size_t contentmax;
+    size_t contentlength;
 };
 
 
@@ -87,6 +91,10 @@ struct chttp_request *
 chttp_request_new(uint8_t pages);
 
 
+int
+chttp_request_free(struct chttp_request *r);
+
+
 chttp_status_t
 chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 
@@ -96,17 +104,26 @@ chttp_response_start(struct chttp_request *r, chttp_status_t status,
         const char *text);
 
 
-ssize_t
-chttp_response_tobuff(struct chttp_request *r, char *buff, size_t bufflen);
-
-
 int
 chttp_response_header(struct chttp_request *r, const char *fmt, ...);
+
+
+ssize_t
+chttp_response_header_tobuff(struct chttp_request *r, char *buff,
+        size_t bufflen);
 
 
 int
 chttp_response_contenttype(struct chttp_request *r, const char *type,
         const char *charset);
+
+
+int
+chttp_response_content_allocate(struct chttp_request *r, size_t size);
+
+
+ssize_t
+chttp_response_content_write(struct chttp_request *r, const char *fmt, ...);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

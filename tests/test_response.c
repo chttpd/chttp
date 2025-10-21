@@ -29,19 +29,19 @@
 
 void
 test_response_start() {
-    char buff[1024];
     struct chttp_request *r = chttp_request_new(3);
+    struct chttp_response *resp = &r->response;
     isnotnull(r);
 
     memset(&r->response, 0, sizeof(r->response));
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
-    eqint(19, chttp_response_header_tobuff(r, buff, sizeof(buff)));
-    eqnstr("HTTP/1.1 200 Ok\r\n\r\n", buff, 19);
+    eqint(0, chttp_response_header_close(r));
+    eqnstr("HTTP/1.1 200 Ok\r\n\r\n", resp->header, resp->headerlen);
 
-    memset(&r->response, 0, sizeof(r->response));
+    memset(resp, 0, sizeof(r->response));
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, "Foo"));
-    eqint(20, chttp_response_header_tobuff(r, buff, sizeof(buff)));
-    eqnstr("HTTP/1.1 200 Foo\r\n\r\n", buff, 20);
+    eqint(0, chttp_response_header_close(r));
+    eqnstr("HTTP/1.1 200 Foo\r\n\r\n", resp->header, resp->headerlen);
 
     eqint(-1, chttp_response_start(r, 0, NULL));
 
@@ -51,9 +51,8 @@ test_response_start() {
 
 void
 test_response_headers() {
-    char buff[1024];
-    ssize_t len;
     struct chttp_request *r = chttp_request_new(3);
+    struct chttp_response *resp = &r->response;
     isnotnull(r);
 
     eqint(-1, chttp_response_header(r, "foo = %s", "bar"));
@@ -61,10 +60,11 @@ test_response_headers() {
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
     eqint(0, chttp_response_header(r, "foo = %s", "bar"));
     eqint(0, chttp_response_contenttype(r, "text/plain", "utf-8"));
-    len = chttp_response_header_tobuff(r, buff, sizeof(buff));
+    eqint(0, chttp_response_header_close(r));
     eqnstr("HTTP/1.1 200 Ok\r\n"
             "foo = bar\r\n"
-            "Content-Type: text/plain; charset=utf-8\r\n\r\n", buff, len);
+            "Content-Type: text/plain; charset=utf-8\r\n\r\n",
+            resp->header, resp->headerlen);
 
     chttp_request_free(r);
 }
@@ -72,9 +72,8 @@ test_response_headers() {
 
 void
 test_response_content() {
-    char buff[1024];
-    ssize_t len;
     struct chttp_request *r = chttp_request_new(3);
+    struct chttp_response *resp = &r->response;
     isnotnull(r);
 
     eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
@@ -82,10 +81,10 @@ test_response_content() {
     eqint(7, chttp_response_content_write(r, "foo %s", "bar"));
     eqint(9, chttp_response_content_write(r, " baz %s", "quux"));
 
-    len = chttp_response_header_tobuff(r, buff, sizeof(buff));
+    eqint(0, chttp_response_header_close(r));
     eqnstr("HTTP/1.1 200 Ok\r\n"
             "Content-Length: 16\r\n\r\n",
-            buff, len);
+            resp->header, resp->headerlen);
     eqnstr("foo bar baz quux", r->response.content,
             r->response.contentlength);
 

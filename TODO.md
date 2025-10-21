@@ -3,6 +3,7 @@
 - url formencodded 
 - multipart
 - json form parsing
+- userptr for request
 
 
 ## backlog

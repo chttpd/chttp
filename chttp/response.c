@@ -110,12 +110,9 @@ chttp_response_contenttype(struct chttp_request *r, const char *type,
 }
 
 
-ssize_t
-chttp_response_header_tobuff(struct chttp_request *r, char *buff,
-        size_t bufflen) {
-    size_t len;
+int
+chttp_response_header_close(struct chttp_request *r) {
     struct chttp_response *resp = &r->response;
-    size_t totallen;
 
     if (resp->content) {
         if (chttp_response_header(r, "Content-Length: %d",
@@ -124,18 +121,11 @@ chttp_response_header_tobuff(struct chttp_request *r, char *buff,
         }
     }
 
-    totallen = resp->headerlen + 2;
-    if (totallen > bufflen) {
+    if (store_append(&r->store, NULL, "\r\n")) {
         return -1;
     }
 
-    memcpy(buff, resp->header, resp->headerlen);
-    len = resp->headerlen;
-
-    memcpy(buff + len, "\r\n", 2);
-    len += 2;
-
-    return len;
+    return 0;
 }
 
 

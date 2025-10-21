@@ -108,9 +108,8 @@ int
 chttp_response_header(struct chttp_request *r, const char *fmt, ...);
 
 
-ssize_t
-chttp_response_header_tobuff(struct chttp_request *r, char *buff,
-        size_t bufflen);
+int
+chttp_response_header_close(struct chttp_request *r);
 
 
 int

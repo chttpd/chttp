@@ -6,7 +6,6 @@ list(APPEND testrules
   status
   request
   response
-  buffwriter
 )
 
 

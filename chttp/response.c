@@ -24,7 +24,6 @@
 /* local private */
 #include "store.h"
 #include "response.h"
-#include "buffwriter.h"
 
 /* local public */
 #include "chttp.h"

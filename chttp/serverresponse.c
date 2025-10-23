@@ -23,7 +23,7 @@
 
 /* local private */
 #include "store.h"
-#include "response.h"
+#include "serverresponse.h"
 
 /* local public */
 #include "chttp.h"
@@ -33,9 +33,9 @@ static const char *_proto = "HTTP/1.1";
 
 
 int
-chttp_response_start(struct chttp_request *r, chttp_status_t status,
+chttp_serverresponse_start(struct chttp_request *r, chttp_status_t status,
         const char *text) {
-    struct chttp_response *resp = &r->response;
+    struct chttp_serverresponse *resp = &r->response;
     size_t len;
 
     if (text == NULL) {
@@ -57,8 +57,8 @@ chttp_response_start(struct chttp_request *r, chttp_status_t status,
 
 
 int
-chttp_response_header(struct chttp_request *r, const char *fmt, ...) {
-    struct chttp_response *resp = &r->response;
+chttp_serverresponse_header(struct chttp_request *r, const char *fmt, ...) {
+    struct chttp_serverresponse *resp = &r->response;
     va_list args;
     int ret;
     size_t len;
@@ -86,14 +86,14 @@ chttp_response_header(struct chttp_request *r, const char *fmt, ...) {
 
 
 int
-chttp_response_contenttype(struct chttp_request *r, const char *type,
+chttp_serverresponse_contenttype(struct chttp_request *r, const char *type,
         const char *charset) {
     if (type == NULL) {
         return -1;
     }
 
     if (charset) {
-        if (chttp_response_header(r, "Content-Type: %s; charset=%s", type,
+        if (chttp_serverresponse_header(r, "Content-Type: %s; charset=%s", type,
                     charset)) {
             return -1;
         }
@@ -101,7 +101,7 @@ chttp_response_contenttype(struct chttp_request *r, const char *type,
         return 0;
     }
 
-    if (chttp_response_header(r, "Content-Type: %s", type)) {
+    if (chttp_serverresponse_header(r, "Content-Type: %s", type)) {
         return -1;
     }
 
@@ -110,11 +110,11 @@ chttp_response_contenttype(struct chttp_request *r, const char *type,
 
 
 int
-chttp_response_header_close(struct chttp_request *r) {
-    struct chttp_response *resp = &r->response;
+chttp_serverresponse_header_close(struct chttp_request *r) {
+    struct chttp_serverresponse *resp = &r->response;
 
     if (resp->content) {
-        if (chttp_response_header(r, "Content-Length: %d",
+        if (chttp_serverresponse_header(r, "Content-Length: %d",
                     resp->contentlength)) {
             return -1;
         }
@@ -129,8 +129,8 @@ chttp_response_header_close(struct chttp_request *r) {
 
 
 int
-chttp_response_content_allocate(struct chttp_request *r, size_t size) {
-    struct chttp_response *resp = &r->response;
+chttp_serverresponse_content_allocate(struct chttp_request *r, size_t size) {
+    struct chttp_serverresponse *resp = &r->response;
 
     if (resp->content) {
         return -1;
@@ -148,8 +148,9 @@ chttp_response_content_allocate(struct chttp_request *r, size_t size) {
 
 
 ssize_t
-chttp_response_content_write(struct chttp_request *r, const char *fmt, ...) {
-    struct chttp_response *resp = &r->response;
+chttp_serverresponse_content_write(struct chttp_request *r, const char *fmt,
+        ...) {
+    struct chttp_serverresponse *resp = &r->response;
     va_list args;
     int bytes;
     size_t avail;

@@ -28,39 +28,39 @@
 
 
 void
-test_response_start() {
+test_serverresponse_start() {
     struct chttp_request *r = chttp_request_new(3);
-    struct chttp_response *resp = &r->response;
+    struct chttp_serverresponse *resp = &r->response;
     isnotnull(r);
 
     memset(&r->response, 0, sizeof(r->response));
-    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
-    eqint(0, chttp_response_header_close(r));
+    eqint(0, chttp_serverresponse_start(r, CHTTP_STATUS_200_OK, NULL));
+    eqint(0, chttp_serverresponse_header_close(r));
     eqnstr("HTTP/1.1 200 Ok\r\n\r\n", resp->header, resp->headerlen);
 
     memset(resp, 0, sizeof(r->response));
-    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, "Foo"));
-    eqint(0, chttp_response_header_close(r));
+    eqint(0, chttp_serverresponse_start(r, CHTTP_STATUS_200_OK, "Foo"));
+    eqint(0, chttp_serverresponse_header_close(r));
     eqnstr("HTTP/1.1 200 Foo\r\n\r\n", resp->header, resp->headerlen);
 
-    eqint(-1, chttp_response_start(r, 0, NULL));
+    eqint(-1, chttp_serverresponse_start(r, 0, NULL));
 
     chttp_request_free(r);
 }
 
 
 void
-test_response_headers() {
+test_serverresponse_headers() {
     struct chttp_request *r = chttp_request_new(3);
-    struct chttp_response *resp = &r->response;
+    struct chttp_serverresponse *resp = &r->response;
     isnotnull(r);
 
-    eqint(-1, chttp_response_header(r, "foo = %s", "bar"));
+    eqint(-1, chttp_serverresponse_header(r, "foo = %s", "bar"));
 
-    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
-    eqint(0, chttp_response_header(r, "foo = %s", "bar"));
-    eqint(0, chttp_response_contenttype(r, "text/plain", "utf-8"));
-    eqint(0, chttp_response_header_close(r));
+    eqint(0, chttp_serverresponse_start(r, CHTTP_STATUS_200_OK, NULL));
+    eqint(0, chttp_serverresponse_header(r, "foo = %s", "bar"));
+    eqint(0, chttp_serverresponse_contenttype(r, "text/plain", "utf-8"));
+    eqint(0, chttp_serverresponse_header_close(r));
     eqnstr("HTTP/1.1 200 Ok\r\n"
             "foo = bar\r\n"
             "Content-Type: text/plain; charset=utf-8\r\n\r\n",
@@ -71,17 +71,17 @@ test_response_headers() {
 
 
 void
-test_response_content() {
+test_serverresponse_content() {
     struct chttp_request *r = chttp_request_new(3);
-    struct chttp_response *resp = &r->response;
+    struct chttp_serverresponse *resp = &r->response;
     isnotnull(r);
 
-    eqint(0, chttp_response_start(r, CHTTP_STATUS_200_OK, NULL));
-    eqint(0, chttp_response_content_allocate(r, 128));
-    eqint(7, chttp_response_content_write(r, "foo %s", "bar"));
-    eqint(9, chttp_response_content_write(r, " baz %s", "quux"));
+    eqint(0, chttp_serverresponse_start(r, CHTTP_STATUS_200_OK, NULL));
+    eqint(0, chttp_serverresponse_content_allocate(r, 128));
+    eqint(7, chttp_serverresponse_content_write(r, "foo %s", "bar"));
+    eqint(9, chttp_serverresponse_content_write(r, " baz %s", "quux"));
 
-    eqint(0, chttp_response_header_close(r));
+    eqint(0, chttp_serverresponse_header_close(r));
     eqnstr("HTTP/1.1 200 Ok\r\n"
             "Content-Length: 16\r\n\r\n",
             resp->header, resp->headerlen);
@@ -94,8 +94,8 @@ test_response_content() {
 
 int
 main() {
-    test_response_content();
-    test_response_headers();
-    test_response_start();
+    test_serverresponse_content();
+    test_serverresponse_headers();
+    test_serverresponse_start();
     return EXIT_SUCCESS;
 }

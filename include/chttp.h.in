@@ -53,7 +53,7 @@ struct chttp_store {
 };
 
 
-struct chttp_response {
+struct chttp_serverresponse {
     const char *header;
     unsigned int headerlen;
 
@@ -77,7 +77,7 @@ struct chttp_request {
     unsigned short headerscount;
     const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
 
-    struct chttp_response response;
+    struct chttp_serverresponse response;
     struct chttp_store store;
     char storebuff[];
 };
@@ -100,29 +100,30 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 
 
 int
-chttp_response_start(struct chttp_request *r, chttp_status_t status,
+chttp_serverresponse_start(struct chttp_request *r, chttp_status_t status,
         const char *text);
 
 
 int
-chttp_response_header(struct chttp_request *r, const char *fmt, ...);
+chttp_serverresponse_header(struct chttp_request *r, const char *fmt, ...);
 
 
 int
-chttp_response_header_close(struct chttp_request *r);
+chttp_serverresponse_header_close(struct chttp_request *r);
 
 
 int
-chttp_response_contenttype(struct chttp_request *r, const char *type,
+chttp_serverresponse_contenttype(struct chttp_request *r, const char *type,
         const char *charset);
 
 
 int
-chttp_response_content_allocate(struct chttp_request *r, size_t size);
+chttp_serverresponse_content_allocate(struct chttp_request *r, size_t size);
 
 
 ssize_t
-chttp_response_content_write(struct chttp_request *r, const char *fmt, ...);
+chttp_serverresponse_content_write(struct chttp_request *r, const char *fmt,
+        ...);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

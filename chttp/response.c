@@ -138,22 +138,19 @@ _headers_parse(struct chttp_response *r, char *headers) {
 
 static int
 _startline_parse(struct chttp_response *r, char *line) {
-    char *tokens[3];
+    char *saveptr;
+    char *status;
 
     /* protocol/status/text */
-    if (str_tokenizeall(line, " ", 3, tokens) != 3) {
+    r->protocol = str_tokenize(line, " ", &saveptr);
+    status = str_tokenize(NULL, " ", &saveptr);
+
+    if ((saveptr[0] == '\r') || (!saveptr[0])) {
         return -1;
     }
 
-    if (store_str(&r->store, &r->protocol, NULL, tokens[0])) {
-        return -1;
-    }
-
-    if (store_str(&r->store, &r->text, NULL, tokens[2])) {
-        return -1;
-    }
-
-    r->status = atoi(tokens[1]);
+    r->status = atoi(status);
+    r->text = saveptr;
     return 0;
 }
 
@@ -203,7 +200,7 @@ chttp_response_parse(struct chttp_response *r, char *header, size_t size) {
         return -1;
     }
 
-    if (saveptr && (saveptr[0] = '\n')) {
+    if (saveptr && (saveptr[0] == '\n')) {
         saveptr++;
     }
 

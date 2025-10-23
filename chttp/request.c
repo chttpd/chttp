@@ -239,7 +239,7 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
         return CHTTP_STATUS_400_BADREQUEST;
     }
 
-    if (saveptr && (saveptr[0] = '\n')) {
+    if (saveptr && (saveptr[0] == '\n')) {
         saveptr++;
     }
 

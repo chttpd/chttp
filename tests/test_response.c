@@ -39,12 +39,32 @@ test_response_startline() {
     eqstr("OK", r->text);
     eqstr("HTTP/1.1", r->protocol);
 
+    eqint(200, responsef(r, "HTTP/1.1 200 Foo Bar\r\n"));
+    eqint(200, r->status);
+    eqstr("Foo Bar", r->text);
+    chttp_response_free(r);
+}
+
+
+static void
+test_response_header() {
+    struct chttp_response *r = chttp_response_new(3);
+    isnotnull(r);
+
+    eqint(400, responsef(r,
+            "HTTP/1.1 400 Bad Request\r\n"
+            "Content-Type: text/plain; charset=utf-8\r\n"));
+
+    eqstr("text/plain", r->contenttype);
+    eqstr("utf-8", r->charset);
+    eqint(0, r->headerscount);
     chttp_response_free(r);
 }
 
 
 int
 main() {
+    test_response_header();
     test_response_startline();
     return EXIT_SUCCESS;
 }

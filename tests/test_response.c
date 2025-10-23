@@ -16,20 +16,36 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef TESTS_FIXTURES_H_
-#define TESTS_FIXTURES_H_
+/* standard */
+#include <unistd.h>
 
+/* thirdparty */
+#include <cutest.h>
 
 /* local public */
 #include "chttp.h"
 
-
-chttp_status_t
-requestf(struct chttp_request *r, const char *fmt, ...);
-
-
-chttp_status_t
-responsef(struct chttp_response *r, const char *fmt, ...);
+/* local private */
+#include "fixtures.h"
 
 
-#endif  // TESTS_FIXTURES_H_
+static void
+test_response_startline() {
+    struct chttp_response *r = chttp_response_new(3);
+    isnotnull(r);
+
+    eqint(200, responsef(r, "HTTP/1.1 200 OK\r\n"));
+    eqint(200, r->status);
+    eqstr("OK", r->text);
+    eqstr("HTTP/1.1", r->protocol);
+
+    chttp_response_free(r);
+}
+
+
+int
+main() {
+    test_response_startline();
+    return EXIT_SUCCESS;
+}
+

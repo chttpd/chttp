@@ -16,20 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef TESTS_FIXTURES_H_
-#define TESTS_FIXTURES_H_
+#ifndef CHTTP_RESPONSE_H_
+#define CHTTP_RESPONSE_H_
 
 
-/* local public */
-#include "chttp.h"
-
-
-chttp_status_t
-requestf(struct chttp_request *r, const char *fmt, ...);
-
-
-chttp_status_t
-responsef(struct chttp_response *r, const char *fmt, ...);
-
-
-#endif  // TESTS_FIXTURES_H_
+#endif  // CHTTP_RESPONSE_H_

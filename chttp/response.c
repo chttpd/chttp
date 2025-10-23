@@ -22,15 +22,14 @@
 /* local private */
 #include "store.h"
 #include "str.h"
-#include "uri.h"
-#include "request.h"
+#include "response.h"
 
 /* local public */
 #include "chttp.h"
 
 
 static int
-_contenttype_parse(struct chttp_request *r, char *in) {
+_contenttype_parse(struct chttp_response *r, char *in) {
     char *tokens[2];
 
     switch (str_tokenizeall(in, ";", 2, tokens)) {
@@ -61,25 +60,12 @@ _contenttype_parse(struct chttp_request *r, char *in) {
   *  0 known header
   */
 static int
-_header_known(struct chttp_request *r, char *header) {
+_header_known(struct chttp_response *r, char *header) {
     char *tmp;
-    int ret;
 
     if (strcasestr(header, "content-length:") == header) {
         r->contentlength = atoi(str_trim(header + 15, NULL));
         return 0;
-    }
-
-    ret = store_suffixifprefix_ci(&r->store, &r->useragent, NULL, header,
-            "user-agent:");
-    if (ret <= 0) {
-        return ret;
-    }
-
-    ret = store_suffixifprefix_ci(&r->store, &r->expect, NULL, header,
-            "expect:");
-    if (ret <= 0) {
-        return ret;
     }
 
     if (str_startswith(header, "content-type:")) {
@@ -96,16 +82,16 @@ _header_known(struct chttp_request *r, char *header) {
 
 
 static chttp_status_t
-_headers_parse(struct chttp_request *r, char *headers) {
+_headers_parse(struct chttp_response *r, char *headers) {
     int ret;
     int i;
     int count = 0;
     char *token;
     char *saveptr = NULL;
-    char *hdrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-    const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    char *hdrs[CONFIG_CHTTP_RESPONSE_HEADERSMAX];
+    const char **ptrs[CONFIG_CHTTP_RESPONSE_HEADERSMAX];
 
-    for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
+    for (i = 0; i < CONFIG_CHTTP_RESPONSE_HEADERSMAX; i++) {
         token = str_tokenize(i? NULL: headers, "\r", &saveptr);
         if (token == NULL) {
             break;
@@ -113,12 +99,12 @@ _headers_parse(struct chttp_request *r, char *headers) {
 
         if (!token[0]) {
             /* zero length header found */
-            return CHTTP_STATUS_400_BADREQUEST;
+            return -1;
         }
 
         ret = _header_known(r, token);
         if (ret == -1) {
-            return CHTTP_STATUS_400_BADREQUEST;
+            return -1;
         }
 
         if (ret == 0) {
@@ -133,7 +119,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
     }
 
     if (saveptr[0]) {
-        return CHTTP_STATUS_400_BADREQUEST;
+        return -1;
     }
 
     for (i = 0; i < count; i++) {
@@ -142,7 +128,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
 
     /* apply the store functor to all pointers */
     if (count != store_all(&r->store, count, ptrs, (const char **)hdrs)) {
-        return CHTTP_STATUS_500_INTERNALSERVERERROR;
+        return -1;
     }
 
     r->headerscount = count;
@@ -151,52 +137,30 @@ _headers_parse(struct chttp_request *r, char *headers) {
 
 
 static int
-_pathquery_split(char *uri, char **path, char **query) {
-    char *tokens[2];
+_startline_parse(struct chttp_response *r, char *line) {
+    char *tokens[3];
 
-    switch (str_tokenizeall(uri, "?", 2, tokens)) {
-        case 2:
-            uridecode(tokens[1]);
-            *query = tokens[1];
-            break;
-        case 1:
-            *query = NULL;
-            break;
-        default:
-            return -1;
-    }
-
-    *path = tokens[0];
-    return 0;
-}
-
-
-static int
-_startline_parse(struct chttp_request *r, char *line) {
-    char *tokens[4];
-
-    /* verb/uri/protocol */
+    /* protocol/status/text */
     if (str_tokenizeall(line, " ", 3, tokens) != 3) {
         return -1;
     }
 
-    if (_pathquery_split(tokens[1], &tokens[1], &tokens[3])) {
+    if (store_str(&r->store, &r->protocol, NULL, tokens[0])) {
         return -1;
     }
 
-    if (4 != store_all(&r->store, 4, (const char **[]) {
-                &r->verb, &r->path, &r->protocol, &r->query
-            }, (const char **)tokens)) {
+    if (store_str(&r->store, &r->text, NULL, tokens[2])) {
         return -1;
     }
 
+    r->status = atoi(tokens[1]);
     return 0;
 }
 
 
-struct chttp_request *
-chttp_request_new(uint8_t pages) {
-    struct chttp_request *r;
+struct chttp_response *
+chttp_response_new(uint8_t pages) {
+    struct chttp_response *r;
     size_t total = pages * CONFIG_SYSTEM_PAGESIZE;
 
     r = malloc(total);
@@ -204,7 +168,7 @@ chttp_request_new(uint8_t pages) {
         return NULL;
     }
 
-    store_init(&r->store, r->storebuff, total - sizeof(struct chttp_request));
+    store_init(&r->store, r->storebuff, total - sizeof(struct chttp_response));
 
     /* zero fill */
     memset(r, 0, ((void *)&r->store) - ((void *)r));
@@ -214,16 +178,16 @@ chttp_request_new(uint8_t pages) {
 
 
 chttp_status_t
-chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
+chttp_response_parse(struct chttp_response *r, char *header, size_t size) {
     char *line;
     char *saveptr;
 
     if (size < 16) {
-        return CHTTP_STATUS_400_BADREQUEST;
+        return -1;
     }
 
     if (size > store_avail(r->store)) {
-        return CHTTP_STATUS_431_REQUESTHEADERFIELDSTOOLARGE;
+        return -1;
     }
 
     /* null termination for strtok_r */
@@ -232,11 +196,11 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
     /* startline */
     line = strtok_r(header, "\r\n", &saveptr);
     if (line == NULL) {
-        return CHTTP_STATUS_414_URITOOLONG;
+        return -1;
     }
 
     if (_startline_parse(r, line)) {
-        return CHTTP_STATUS_400_BADREQUEST;
+        return -1;
     }
 
     if (saveptr && (saveptr[0] = '\n')) {
@@ -248,13 +212,9 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
 
 
 int
-chttp_request_free(struct chttp_request *r) {
+chttp_response_free(struct chttp_response *r) {
     if (r == NULL) {
         return -1;
-    }
-
-    if (r->response.content) {
-        free(r->response.content);
     }
 
     free(r);

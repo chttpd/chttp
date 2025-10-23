@@ -29,6 +29,8 @@
 
 
 #cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
+#cmakedefine CONFIG_CHTTP_RESPONSE_HEADERSMAX \
+    @CONFIG_CHTTP_RESPONSE_HEADERSMAX@
 #cmakedefine CONFIG_SYSTEM_PAGESIZE @CONFIG_SYSTEM_PAGESIZE@
 
 
@@ -83,6 +85,22 @@ struct chttp_request {
 };
 
 
+struct chttp_response {
+    chttp_status_t status;
+    const char *text;
+    const char *protocol;
+    const char *contenttype;
+    const char *charset;
+    ssize_t contentlength;
+
+    unsigned short headerscount;
+    const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+
+    struct chttp_store store;
+    char storebuff[];
+};
+
+
 const char *
 chttp_status_text(chttp_status_t status);
 
@@ -124,6 +142,18 @@ chttp_serverresponse_content_allocate(struct chttp_request *r, size_t size);
 ssize_t
 chttp_serverresponse_content_write(struct chttp_request *r, const char *fmt,
         ...);
+
+
+struct chttp_response *
+chttp_response_new(uint8_t pages);
+
+
+chttp_status_t
+chttp_response_parse(struct chttp_response *r, char *header, size_t size);
+
+
+int
+chttp_response_free(struct chttp_response *r);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

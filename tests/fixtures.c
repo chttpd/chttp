@@ -25,7 +25,7 @@
 #include "fixtures.h"
 
 
-static char _reqbuff[CONFIG_SYSTEM_PAGESIZE * 4];
+static char _buff[CONFIG_SYSTEM_PAGESIZE * 4];
 
 
 chttp_status_t
@@ -34,12 +34,33 @@ requestf(struct chttp_request *r, const char *fmt, ...) {
     va_list args;
 
     va_start(args, fmt);
-    bytes = vsprintf(_reqbuff, fmt, args);
+    bytes = vsprintf(_buff, fmt, args);
     va_end(args);
 
     if (bytes < 0) {
         return -1;
     }
 
-    return chttp_request_parse(r, _reqbuff, bytes);
+    return chttp_request_parse(r, _buff, bytes);
+}
+
+
+chttp_status_t
+responsef(struct chttp_response *r, const char *fmt, ...) {
+    size_t bytes;
+    va_list args;
+
+    va_start(args, fmt);
+    bytes = vsprintf(_buff, fmt, args);
+    va_end(args);
+
+    if (bytes < 0) {
+        return -1;
+    }
+
+    if (chttp_response_parse(r, _buff, bytes)) {
+        return -1;
+    }
+
+    return r->status;
 }

@@ -7,6 +7,7 @@ add_library(uri OBJECT uri.c uri.h)
 add_library(status OBJECT status.c status.h)
 add_library(request OBJECT request.c request.h)
 add_library(serverresponse OBJECT serverresponse.c serverresponse.h)
+add_library(response OBJECT response.c response.h)
 add_library(chttp STATIC
   $<TARGET_OBJECTS:store>
   $<TARGET_OBJECTS:str>
@@ -14,4 +15,5 @@ add_library(chttp STATIC
   $<TARGET_OBJECTS:uri>
   $<TARGET_OBJECTS:request>
   $<TARGET_OBJECTS:serverresponse>
+  $<TARGET_OBJECTS:response>
 )

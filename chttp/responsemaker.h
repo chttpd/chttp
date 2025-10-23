@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CHTTP_SERVERRESPONSE_H_
-#define CHTTP_SERVERRESPONSE_H_
+#ifndef CHTTP_RESPONSEMAKER_H_
+#define CHTTP_RESPONSEMAKER_H_
 
 
-#endif  // CHTTP_SERVERRESPONSE_H_
+#endif  // CHTTP_RESPONSEMAKER_H_

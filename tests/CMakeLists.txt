@@ -5,7 +5,7 @@ list(APPEND testrules
   store
   status
   request
-  serverresponse
+  responsemaker
   response
 )
 

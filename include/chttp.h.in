@@ -22,6 +22,7 @@
 
 /* standard */
 #include <stdint.h>
+#include <stdarg.h>
 #include <stdlib.h>
 
 /* system */
@@ -120,6 +121,11 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 int
 chttp_responsemaker_start(struct chttp_request *r, chttp_status_t status,
         const char *text);
+
+
+int
+chttp_responsemaker_vheader(struct chttp_request *r, const char *fmt,
+        va_list args);
 
 
 int

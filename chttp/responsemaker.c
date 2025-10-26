@@ -57,9 +57,9 @@ chttp_responsemaker_start(struct chttp_request *r, chttp_status_t status,
 
 
 int
-chttp_responsemaker_header(struct chttp_request *r, const char *fmt, ...) {
+chttp_responsemaker_vheader(struct chttp_request *r, const char *fmt,
+        va_list args) {
     struct chttp_responsemaker *resp = &r->response;
-    va_list args;
     int ret;
     size_t len;
 
@@ -67,9 +67,7 @@ chttp_responsemaker_header(struct chttp_request *r, const char *fmt, ...) {
         return -1;
     }
 
-    va_start(args, fmt);
     ret = store_vappendf(&r->store, &len, fmt, args);
-    va_end(args);
 
     if (ret) {
         return -1;
@@ -82,6 +80,19 @@ chttp_responsemaker_header(struct chttp_request *r, const char *fmt, ...) {
 
     resp->headerlen += len;
     return 0;
+}
+
+
+int
+chttp_responsemaker_header(struct chttp_request *r, const char *fmt, ...) {
+    va_list args;
+    int ret;
+
+    va_start(args, fmt);
+    ret = chttp_responsemaker_vheader(r, fmt, args);
+    va_end(args);
+
+    return ret;
 }
 
 

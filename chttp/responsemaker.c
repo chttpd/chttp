@@ -135,6 +135,7 @@ chttp_responsemaker_header_close(struct chttp_request *r) {
         return -1;
     }
 
+    resp->headerlen += 2;
     return 0;
 }
 

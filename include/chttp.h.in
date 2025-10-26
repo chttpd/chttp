@@ -114,6 +114,10 @@ int
 chttp_request_free(struct chttp_request *r);
 
 
+void
+chttp_request_reset(struct chttp_request *r);
+
+
 chttp_status_t
 chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 

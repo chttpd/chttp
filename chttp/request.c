@@ -264,6 +264,11 @@ chttp_request_free(struct chttp_request *r) {
 
 void
 chttp_request_reset(struct chttp_request *r) {
+    if (r->response.content) {
+        free(r->response.content);
+    }
+
     memset(r, 0, ((void *)&r->store) - ((void *)r));
+    r->store.len = 0;
     r->contentlength = -1;
 }

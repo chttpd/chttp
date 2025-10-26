@@ -159,10 +159,9 @@ chttp_responsemaker_content_allocate(struct chttp_request *r, size_t size) {
 
 
 ssize_t
-chttp_responsemaker_content_write(struct chttp_request *r, const char *fmt,
-        ...) {
+chttp_responsemaker_content_vwrite(struct chttp_request *r, const char *fmt,
+        va_list args) {
     struct chttp_responsemaker *resp = &r->response;
-    va_list args;
     int bytes;
     size_t avail;
 
@@ -171,9 +170,7 @@ chttp_responsemaker_content_write(struct chttp_request *r, const char *fmt,
     }
 
     avail = resp->contentmax - resp->contentlength;
-    va_start(args, fmt);
     bytes = vsnprintf(resp->content + resp->contentlength, avail, fmt, args);
-    va_end(args);
 
     if (bytes >= avail) {
         /* output truncated */
@@ -181,5 +178,19 @@ chttp_responsemaker_content_write(struct chttp_request *r, const char *fmt,
     }
 
     resp->contentlength += bytes;
+    return bytes;
+}
+
+
+ssize_t
+chttp_responsemaker_content_write(struct chttp_request *r, const char *fmt,
+        ...) {
+    va_list args;
+    int bytes;
+
+    va_start(args, fmt);
+    bytes = chttp_responsemaker_content_vwrite(r, fmt, args);
+    va_end(args);
+
     return bytes;
 }

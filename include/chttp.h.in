@@ -146,6 +146,11 @@ chttp_responsemaker_content_allocate(struct chttp_request *r, size_t size);
 
 
 ssize_t
+chttp_responsemaker_content_vwrite(struct chttp_request *r, const char *fmt,
+        va_list args);
+
+
+ssize_t
 chttp_responsemaker_content_write(struct chttp_request *r, const char *fmt,
         ...);
 

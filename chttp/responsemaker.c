@@ -104,8 +104,8 @@ chttp_responsemaker_contenttype(struct chttp_request *r, const char *type,
     }
 
     if (charset) {
-        if (chttp_responsemaker_header(r, "Content-Type: %s; charset=%s", type,
-                    charset)) {
+        if (chttp_responsemaker_header(r, "Content-Type: %s; charset=%s",
+                    type, charset)) {
             return -1;
         }
 
@@ -163,7 +163,7 @@ ssize_t
 chttp_responsemaker_content_vwrite(struct chttp_request *r, const char *fmt,
         va_list args) {
     struct chttp_responsemaker *resp = &r->response;
-    int bytes;
+    ssize_t bytes;
     size_t avail;
 
     if (resp->content == NULL) {
@@ -187,7 +187,7 @@ ssize_t
 chttp_responsemaker_content_write(struct chttp_request *r, const char *fmt,
         ...) {
     va_list args;
-    int bytes;
+    ssize_t bytes;
 
     va_start(args, fmt);
     bytes = chttp_responsemaker_content_vwrite(r, fmt, args);

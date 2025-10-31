@@ -171,4 +171,8 @@ int
 chttp_response_free(struct chttp_response *r);
 
 
+void
+chttp_response_reset(struct chttp_response *r);
+
+
 #endif  // INCLUDE_CHTTP_H_IN_

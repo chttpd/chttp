@@ -174,6 +174,14 @@ chttp_response_new(uint8_t pages) {
 }
 
 
+void
+chttp_response_reset(struct chttp_response *r) {
+    memset(r, 0, ((void *)&r->store) - ((void *)r));
+    r->store.len = 0;
+    r->contentlength = -1;
+}
+
+
 chttp_status_t
 chttp_response_parse(struct chttp_response *r, char *header, size_t size) {
     char *line;

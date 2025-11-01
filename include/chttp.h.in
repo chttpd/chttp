@@ -177,7 +177,7 @@ chttp_response_reset(struct chttp_response *r);
 
 
 const char *
-chttp_response_header_get(struct chttp_response *r, const char *name);
+chttp_headerset_get(struct chttp_headerset *set, const char *name);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

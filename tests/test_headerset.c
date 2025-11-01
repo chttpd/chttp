@@ -16,34 +16,35 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CHTTP_STR_H_
-#define CHTTP_STR_H_
-
-
 /* standard */
-#include <stdbool.h>
+#include <unistd.h>
+
+/* thirdparty */
+#include <cutest.h>
+
+/* local public */
+#include <chttp.h>
 
 
-#undef F
-typedef char *str_t;
-#define F str
-#include "functor.h"
+static void
+test_headerset() {
+    struct chttp_headerset set = {
+        .count = 2,
+        .list = {
+            "x-foo: bar",
+            "x-baz: qux"
+        }
+    };
+
+    eqstr("bar", chttp_headerset_get(&set, "x-foo"));
+    eqstr("qux", chttp_headerset_get(&set, "x-baz"));
+    isnull(chttp_headerset_get(&set, "x-quux"));
+    isnull(chttp_headerset_get(&set, "x"));
+}
 
 
 int
-str_tokenizeall(char *str, const char *delim, int count, char *out[]);
-
-
-char *
-str_trim(char *s, int *len);
-
-
-char *
-str_tokenize(char *str, const char *restrict delim, char **restrict saveptr);
-
-
-bool
-str_startswith_ci(const char *restrict s, const char *restrict prefix);
-
-
-#endif  // CHTTP_STR_H_
+main() {
+    test_headerset();
+    return EXIT_SUCCESS;
+}

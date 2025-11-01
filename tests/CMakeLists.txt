@@ -7,6 +7,7 @@ list(APPEND testrules
   request
   responsemaker
   response
+  headerset
 )
 
 

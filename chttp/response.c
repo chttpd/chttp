@@ -69,7 +69,7 @@ _header_known(struct chttp_response *r, char *header) {
         return 0;
     }
 
-    if (str_startswith(header, "content-type:")) {
+    if (str_startswith_ci(header, "content-type:")) {
         tmp = str_trim(header + 13, NULL);
         if (_contenttype_parse(r, tmp)) {
             return -1;

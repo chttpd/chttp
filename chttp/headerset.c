@@ -16,34 +16,44 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CHTTP_STR_H_
-#define CHTTP_STR_H_
-
-
 /* standard */
-#include <stdbool.h>
+#include <stdio.h>
+
+/* local private */
+#include "str.h"
+#include "headerset.h"
+
+/* local public */
+#include "chttp.h"
 
 
-#undef F
-typedef char *str_t;
-#define F str
-#include "functor.h"
+const char *
+chttp_headerset_get(struct chttp_headerset *set, const char *name) {
+    int i;
+    char *value;
+    char tmp[256];
+    int tmplen;
 
+    if (name == NULL) {
+        return NULL;
+    }
 
-int
-str_tokenizeall(char *str, const char *delim, int count, char *out[]);
+    tmplen = snprintf(tmp, sizeof(tmp), "%s:", name);
+    if (tmplen >= sizeof(tmp)) {
+        /* output truncated */
+        return NULL;
+    }
 
+    for (i = 0; i < set->count; i++) {
+        if (str_startswith_ci(set->list[i], tmp)) {
+            goto found;
+        }
+    }
 
-char *
-str_trim(char *s, int *len);
+    return NULL;
 
+found:
 
-char *
-str_tokenize(char *str, const char *restrict delim, char **restrict saveptr);
-
-
-bool
-str_startswith_ci(const char *restrict s, const char *restrict prefix);
-
-
-#endif  // CHTTP_STR_H_
+    value = (char *) set->list[i] + tmplen;
+    return str_trim(value, NULL);
+}

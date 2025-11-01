@@ -136,7 +136,7 @@ str_tokenizeall(char *str, const char *delim, int count, char *out[]) {
 
 
 bool
-str_startswith(const char *restrict s, const char *restrict prefix) {
+str_startswith_ci(const char *restrict s, const char *restrict prefix) {
     if ((!s) || (!prefix)) {
         return false;
     }

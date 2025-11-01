@@ -27,13 +27,13 @@
 
 
 static void
-test_str_startswith() {
-    isfalse(str_startswith(NULL, "bar"));
-    isfalse(str_startswith("foo", NULL));
-    isfalse(str_startswith("foo", "bar"));
-    isfalse(str_startswith("fo", "foo"));
-    istrue(str_startswith("foo", "foo"));
-    istrue(str_startswith("foo bar", "foo"));
+test_str_startswith_ci() {
+    isfalse(str_startswith_ci(NULL, "bar"));
+    isfalse(str_startswith_ci("foo", NULL));
+    isfalse(str_startswith_ci("foo", "bar"));
+    isfalse(str_startswith_ci("fo", "foo"));
+    istrue(str_startswith_ci("foo", "foo"));
+    istrue(str_startswith_ci("foo bar", "foo"));
 }
 
 
@@ -124,7 +124,7 @@ test_str_trim() {
 
 int
 main() {
-    test_str_startswith();
+    test_str_startswith_ci();
     test_str_tokenize();
     test_str_tokenizeall();
     test_str_trim();

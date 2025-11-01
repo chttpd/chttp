@@ -266,7 +266,7 @@ store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, size_t *len,
         return -1;
     }
 
-    if (!str_startswith(str, kw)) {
+    if (!str_startswith_ci(str, kw)) {
         return 1;
     }
 

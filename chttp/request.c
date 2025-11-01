@@ -18,6 +18,7 @@
  */
 /* standard */
 #include <string.h>
+#include <unistd.h>
 
 /* local private */
 #include "store.h"
@@ -102,10 +103,10 @@ _headers_parse(struct chttp_request *r, char *headers) {
     int count = 0;
     char *token;
     char *saveptr = NULL;
-    char *hdrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-    const char **ptrs[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    char *hdrs[CONFIG_CHTTP_HEADERSMAX];
+    const char **ptrs[CONFIG_CHTTP_HEADERSMAX];
 
-    for (i = 0; i < CONFIG_CHTTP_REQUEST_HEADERSMAX; i++) {
+    for (i = 0; i < CONFIG_CHTTP_HEADERSMAX; i++) {
         token = str_tokenize(i? NULL: headers, "\r", &saveptr);
         if (token == NULL) {
             break;
@@ -137,7 +138,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
     }
 
     for (i = 0; i < count; i++) {
-        ptrs[i] = &r->headers[i];
+        ptrs[i] = &r->headers.list[i];
     }
 
     /* apply the store functor to all pointers */
@@ -145,7 +146,7 @@ _headers_parse(struct chttp_request *r, char *headers) {
         return CHTTP_STATUS_500_INTERNALSERVERERROR;
     }
 
-    r->headerscount = count;
+    r->headers.count = count;
     return 0;
 }
 
@@ -197,7 +198,8 @@ _startline_parse(struct chttp_request *r, char *line) {
 struct chttp_request *
 chttp_request_new(uint8_t pages) {
     struct chttp_request *r;
-    size_t total = pages * CONFIG_SYSTEM_PAGESIZE;
+    int pagesize = getpagesize();
+    size_t total = pages * pagesize;
 
     r = malloc(total);
     if (r == NULL) {

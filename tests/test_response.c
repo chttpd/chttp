@@ -53,11 +53,14 @@ test_response_header() {
 
     eqint(400, responsef(r,
             "HTTP/1.1 400 Bad Request\r\n"
+            "x-foo: bar\r\n"
             "Content-Type: text/plain; charset=utf-8\r\n"));
 
     eqstr("text/plain", r->contenttype);
     eqstr("utf-8", r->charset);
-    eqint(0, r->headerscount);
+    eqint(1, r->headers.count);
+
+    // eqstr("bar", chttp_header_get(r->headers, "x-foo"));
     chttp_response_free(r);
 }
 
@@ -68,4 +71,3 @@ main() {
     test_response_startline();
     return EXIT_SUCCESS;
 }
-

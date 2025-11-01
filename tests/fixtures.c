@@ -25,7 +25,7 @@
 #include "fixtures.h"
 
 
-static char _buff[CONFIG_SYSTEM_PAGESIZE * 4];
+static char _buff[4096 * 4];
 
 
 chttp_status_t

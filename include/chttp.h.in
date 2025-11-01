@@ -29,10 +29,7 @@
 #include <sys/types.h>
 
 
-#cmakedefine CONFIG_CHTTP_REQUEST_HEADERSMAX @CONFIG_CHTTP_REQUEST_HEADERSMAX@
-#cmakedefine CONFIG_CHTTP_RESPONSE_HEADERSMAX \
-    @CONFIG_CHTTP_RESPONSE_HEADERSMAX@
-#cmakedefine CONFIG_SYSTEM_PAGESIZE @CONFIG_SYSTEM_PAGESIZE@
+#cmakedefine CONFIG_CHTTP_HEADERSMAX @CONFIG_CHTTP_HEADERSMAX@
 
 
 /* statuses */
@@ -66,7 +63,14 @@ struct chttp_responsemaker {
 };
 
 
+struct chttp_headerset {
+    unsigned short count;
+    const char *list[CONFIG_CHTTP_HEADERSMAX];
+};
+
+
 struct chttp_request {
+    /* all these members are pointer to somewhere in store */
     const char *verb;
     const char *path;
     const char *query;
@@ -76,10 +80,9 @@ struct chttp_request {
     const char *expect;
     const char *useragent;
     ssize_t contentlength;
+    struct chttp_headerset headers;
 
-    unsigned short headerscount;
-    const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
-
+    /* allocated backends for the data used above */
     struct chttp_responsemaker response;
     struct chttp_store store;
     char storebuff[];
@@ -93,9 +96,7 @@ struct chttp_response {
     const char *contenttype;
     const char *charset;
     ssize_t contentlength;
-
-    unsigned short headerscount;
-    const char *headers[CONFIG_CHTTP_REQUEST_HEADERSMAX];
+    struct chttp_headerset headers;
 
     struct chttp_store store;
     char storebuff[];
@@ -173,6 +174,10 @@ chttp_response_free(struct chttp_response *r);
 
 void
 chttp_response_reset(struct chttp_response *r);
+
+
+const char *
+chttp_response_header_get(struct chttp_response *r, const char *name);
 
 
 #endif  // INCLUDE_CHTTP_H_IN_

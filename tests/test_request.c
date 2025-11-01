@@ -72,12 +72,12 @@ test_request_headers_parse() {
     isnotnull(r);
 
     eqint(0, requestf(r, "GET /foo/bar HTTP/1.1\r\n"));
-    eqint(0, r->headerscount);
+    eqint(0, r->headers.count);
     eqint(-1, r->contentlength);
 
     eqint(0, requestf(r, "GET /foo/bar HTTP/1.1\r\nfoo = bar\r\n"));
-    eqstr("foo = bar", r->headers[0]);
-    eqint(1, r->headerscount);
+    eqstr("foo = bar", r->headers.list[0]);
+    eqint(1, r->headers.count);
 
     eqint(0, requestf(r, "GET / HTTP/1.1\r\n"
                 "content-type: text/plain; charset=utf-8\r\n"
@@ -90,8 +90,8 @@ test_request_headers_parse() {
     eqint(12, r->contentlength);
     eqstr("100-continue", r->expect);
     eqstr("foo bar baz", r->useragent);
-    eqint(1, r->headerscount);
-    eqstr("foo: bar", r->headers[0]);
+    eqint(1, r->headers.count);
+    eqstr("foo: bar", r->headers.list[0]);
 
     chttp_request_free(r);
 }

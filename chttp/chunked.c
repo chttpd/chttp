@@ -28,6 +28,12 @@
 #include "chunked.h"
 
 
+/** tries to extract a chunk from the input buffer.
+ * returns:
+ * -1: malformed input
+ * -2: need more data
+ *  N: chunk size
+ */
 ssize_t
 chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
         const char **chunk, size_t *garbage) {

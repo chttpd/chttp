@@ -180,4 +180,9 @@ const char *
 chttp_headerset_get(struct chttp_headerset *set, const char *name);
 
 
+ssize_t
+chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
+        const char **chunk, size_t *garbage);
+
+
 #endif  // INCLUDE_CHTTP_H_IN_

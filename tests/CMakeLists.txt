@@ -8,6 +8,7 @@ list(APPEND testrules
   responsemaker
   response
   headerset
+  chunked
 )
 
 

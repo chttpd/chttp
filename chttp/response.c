@@ -152,6 +152,13 @@ _startline_parse(struct chttp_response *r, char *line) {
 
     r->status = atoi(status);
     r->text = saveptr;
+
+    if (2 != store_all(&r->store, 2,
+                (const char **[]) {&r->protocol, &r->text},
+                (const char *[]){r->protocol, r->text})) {
+        return -1;
+    }
+
     return 0;
 }
 

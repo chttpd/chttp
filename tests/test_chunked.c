@@ -30,27 +30,27 @@ static void
 test_chunked_malformed() {
     char *in = "3\r\nfooXX0\r\n\r\n";
     const char *chunk;
-    size_t garbage;
+    size_t plen;
 
     /* more data needed */
     in = "foo";
-    eqint(-2, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &garbage));
+    eqint(-2, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
 
     in = "3\rXfoo";
-    eqint(-2, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &garbage));
+    eqint(-2, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
 
     /* malformed */
     in = "3\r\nfooXX\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &garbage));
+    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
 
     in = "3X\r\nfoo\r\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &garbage));
+    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
 
     in = "3XX\nfoo\r\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &garbage));
+    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
 
     in = "XX\r\nfoo\r\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &garbage));
+    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
 }
 
 
@@ -61,18 +61,18 @@ test_chunked() {
     const char *chunk;
     size_t len = strlen(input);
     ssize_t chunklen;
-    size_t garbage;
+    size_t plen;
 
-    chunklen = chttp_chunkedcodec_getchunk(cursor, len, &chunk, &garbage);
+    chunklen = chttp_chunkedcodec_getchunk(cursor, len, &chunk, &plen);
     eqint(3, chunklen);
-    eqint(8, garbage);
+    eqint(8, plen);
     eqnstr("foo", chunk, chunklen);
 
-    cursor += garbage;
-    len -= garbage;
-    chunklen = chttp_chunkedcodec_getchunk(cursor, len, &chunk, &garbage);
+    cursor += plen;
+    len -= plen;
+    chunklen = chttp_chunkedcodec_getchunk(cursor, len, &chunk, &plen);
     eqint(0, chunklen);
-    eqint(5, garbage);
+    eqint(5, plen);
 }
 
 

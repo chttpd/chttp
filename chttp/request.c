@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 /* local private */
+#include "common.h"
 #include "store.h"
 #include "str.h"
 #include "uri.h"
@@ -65,6 +66,16 @@ static int
 _header_known(struct chttp_request *r, char *header) {
     char *tmp;
     int ret;
+
+    if (strcasestr(header, "transfer-encoding:") == header) {
+        ret = chttp_transferencoding(str_trim(header + 18, NULL));
+        if (ret == -1) {
+            return -1;
+        }
+
+        r->transferencoding = ret;
+        return 0;
+    }
 
     if (strcasestr(header, "content-length:") == header) {
         r->contentlength = atoi(str_trim(header + 15, NULL));

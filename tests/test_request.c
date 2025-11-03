@@ -93,6 +93,9 @@ test_request_headers_parse() {
     eqint(1, r->headers.count);
     eqstr("foo: bar", r->headers.list[0]);
 
+    eqint(0, requestf(r, "GET / HTTP/1.1\r\n"
+                "transfer-encoding: chunked, deflate\r\n"));
+    eqint(CHTTP_TE_CHUNKED | CHTTP_TE_DEFLATE, r->transferencoding);
     chttp_request_free(r);
 }
 

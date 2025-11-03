@@ -53,6 +53,15 @@ struct chttp_store {
 };
 
 
+/* transfer encoding */
+enum {
+    CHTTP_TE_CHUNKED = 1,
+    CHTTP_TE_COMPRESS = 2,
+    CHTTP_TE_DEFLATE = 4,
+    CHTTP_TE_GZIP = 8,
+};
+
+
 struct chttp_responsemaker {
     const char *header;
     unsigned int headerlen;
@@ -79,6 +88,7 @@ struct chttp_request {
     const char *charset;
     const char *expect;
     const char *useragent;
+    int transferencoding;
     ssize_t contentlength;
     struct chttp_headerset headers;
 
@@ -95,6 +105,7 @@ struct chttp_response {
     const char *protocol;
     const char *contenttype;
     const char *charset;
+    int transferencoding;
     ssize_t contentlength;
     struct chttp_headerset headers;
 

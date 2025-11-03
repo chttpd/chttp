@@ -36,7 +36,7 @@
  */
 ssize_t
 chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
-        const char **chunk, size_t *garbage) {
+        const char **chunk, size_t *packetlen) {
     const char *found;
     char *endptr;
     size_t skip;
@@ -49,7 +49,7 @@ chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
 
     /* check for the terminator chunk */
     if (memmem(buff, 5, "0\r\n\r\n", 5)) {
-        *garbage = 5;
+        *packetlen = 5;
         return 0;
     }
 
@@ -84,6 +84,6 @@ chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
     }
 
     *chunk = found + 2;
-    *garbage = skip;
+    *packetlen = skip;
     return chunksize;
 }

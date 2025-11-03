@@ -22,6 +22,7 @@
 
 /* local private */
 #include "str.h"
+#include "store.h"
 #include "common.h"
 
 /* local public */
@@ -59,4 +60,31 @@ chttp_transferencoding(char *buff) {
     }
 
     return ret;
+}
+
+
+int
+chttp_contenttype_parse(struct chttp_store *store, char *in,
+        const char **type, const char **charset) {
+    char *tokens[2];
+
+    switch (str_tokenizeall(in, ";", 2, tokens)) {
+        case 2:
+            if (strcasestr(tokens[1], "charset=") == tokens[1]) {
+                tokens[1] += 8;
+            }
+            break;
+        case 1:
+            break;
+        default:
+            return -1;
+    }
+
+    if (2 != store_all(store, 2,
+                (const char **[]) {type, charset},
+                (const char **)tokens)) {
+        return -1;
+    }
+
+    return 0;
 }

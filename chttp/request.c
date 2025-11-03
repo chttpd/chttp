@@ -31,31 +31,6 @@
 #include "chttp.h"
 
 
-static int
-_contenttype_parse(struct chttp_request *r, char *in) {
-    char *tokens[2];
-
-    switch (str_tokenizeall(in, ";", 2, tokens)) {
-        case 2:
-            if (strcasestr(tokens[1], "charset=") == tokens[1]) {
-                tokens[1] += 8;
-            }
-            break;
-        case 1:
-            break;
-        default:
-            return -1;
-    }
-
-    if (2 != store_all(&r->store, 2, (const char **[]) {
-            &r->contenttype, &r->charset}, (const char **)tokens)) {
-        return -1;
-    }
-
-    return 0;
-}
-
-
 /** determine and store known headers.
   * return:
   * -1 error
@@ -96,7 +71,8 @@ _header_known(struct chttp_request *r, char *header) {
 
     if (str_startswith_ci(header, "content-type:")) {
         tmp = str_trim(header + 13, NULL);
-        if (_contenttype_parse(r, tmp)) {
+        if (chttp_contenttype_parse(&r->store, tmp, &r->contenttype,
+                    &r->charset)) {
             return -1;
         }
 

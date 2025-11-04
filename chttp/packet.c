@@ -22,11 +22,14 @@
 #include <string.h>
 #include <unistd.h>
 
-/* local private */
-#include "store.h"
+/* system */
+#include <sys/uio.h>
 
 /* local public */
 #include "chttp.h"
+
+/* local private */
+#include "common.h"
 
 
 static const char *_proto = "HTTP/1.1";
@@ -34,7 +37,7 @@ static const char *_proto = "HTTP/1.1";
 
 int
 chttp_packet_allocate(struct chttp_packet *p, int headerpages,
-        int contentpages) {
+        int contentpages, int encoding) {
     void *h;
     void *c = NULL;
     size_t pagesize = getpagesize();
@@ -58,6 +61,7 @@ chttp_packet_allocate(struct chttp_packet *p, int headerpages,
 
     if (c) {
         p->contentmax = pagesize * contentpages;
+        p->encoding = encoding;
     }
     p->content = c;
     p->contentlen = 0;
@@ -241,4 +245,47 @@ chttp_packet_write(struct chttp_packet *p, const char *fmt, ...) {
     va_end(args);
 
     return bytes;
+}
+
+
+ssize_t
+chttp_packet_iovec(struct chttp_packet *p, struct iovec v[], int *vcount) {
+    int count = 0;
+    int vmax = *vcount;
+    size_t totallen = 0;
+    ssize_t clen;
+    int ccount;
+
+    if (p->headerlen) {
+        ASSRT(count < vmax);
+        v[count].iov_base = (void *)p->header;
+        v[count].iov_len = p->headerlen;
+        count++;
+        totallen = p->headerlen;
+    }
+
+    if (p->content) {
+        if (p->encoding == CHTTP_TE_CHUNKED) {
+            ccount = vmax - count;
+            clen = chttp_chunked_iovec(p->content, p->contentlen, v + count,
+                    &ccount);
+            ASSRT(clen == -1);
+            count += ccount;
+            totallen += clen;
+        }
+        else {
+            ASSRT(count < vmax);
+            v[count].iov_base = p->content;
+            v[count].iov_len = p->contentlen;
+            count++;
+            totallen += p->contentlen;
+        }
+    }
+
+    if (count == 0) {
+        return -1;
+    }
+
+    *vcount = count;
+    return totallen;
 }

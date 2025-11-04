@@ -31,7 +31,7 @@ void
 test_packet_start() {
     struct chttp_packet p;
 
-    eqint(0, chttp_packet_allocate(&p, 1, 1));
+    eqint(0, chttp_packet_allocate(&p, 1, 1, CHTTP_TE_NONE));
     eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, NULL));
     eqnstr("HTTP/1.1 200 Ok\r\n", p.header, p.headerlen);
 
@@ -50,7 +50,7 @@ void
 test_packet_headers() {
     struct chttp_packet p;
 
-    eqint(0, chttp_packet_allocate(&p, 1, 1));
+    eqint(0, chttp_packet_allocate(&p, 1, 1, CHTTP_TE_NONE));
     eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, NULL));
     eqint(0, chttp_packet_header(&p, "foo = %s", "bar"));
     eqint(0, chttp_packet_contenttype(&p, "text/plain", "utf-8"));
@@ -70,7 +70,7 @@ void
 test_packet_content() {
     struct chttp_packet p;
 
-    eqint(0, chttp_packet_allocate(&p, 1, 1));
+    eqint(0, chttp_packet_allocate(&p, 1, 1, CHTTP_TE_NONE));
     eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, NULL));
     eqint(0, chttp_packet_write(&p, "foo %s ", "bar"));
     eqint(0, chttp_packet_write(&p, "baz %s", "qux"));

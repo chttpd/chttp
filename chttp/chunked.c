@@ -22,9 +22,17 @@
 #include <string.h>
 #include <errno.h>
 
+/* system */
+#include <sys/uio.h>
+
 /* thirdparty */
 /* local public */
 /* local private */
+#include "common.h"
+
+
+static const char *_terminator = "0\r\n\r\n";
+static const char *_crlf = "\r\n";
 
 
 /** tries to extract a chunk from the input buffer.
@@ -34,7 +42,7 @@
  *  N: chunk size
  */
 ssize_t
-chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
+chttp_chunked_parse(const char *buff, size_t bufflen,
         const char **chunk, size_t *packetlen) {
     const char *found;
     char *endptr;
@@ -47,12 +55,12 @@ chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
     }
 
     /* check for the terminator chunk */
-    if (memmem(buff, 5, "0\r\n\r\n", 5)) {
+    if (memmem(buff, 5, _terminator, 5)) {
         *packetlen = 5;
         return 0;
     }
 
-    found = memmem(buff, bufflen, "\r\n", 2);
+    found = memmem(buff, bufflen, _crlf, 2);
     if (found == NULL) {
         /* more data needed */
         return -2;
@@ -78,11 +86,42 @@ chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
     }
 
     /* check for chunk's trailing CRLF */
-    if (NULL == memmem(buff + (skip - 2), 2, "\r\n", 2)) {
+    if (NULL == memmem(buff + (skip - 2), 2, _crlf, 2)) {
         return -1;
     }
 
     *chunk = found + 2;
     *packetlen = skip;
     return chunksize;
+}
+
+
+ssize_t
+chttp_chunked_iovec(const char *buff, size_t len, struct iovec v[],
+        int *vcount) {
+    size_t totallen = 0;
+    int vmax = *vcount;
+    int count = 0;
+    char head[32];
+    int headlen;
+
+    if (len == 0) {
+        ASSRT(count < vmax);
+        v[0].iov_base = (void *)_terminator;
+        v[0].iov_len = 5;
+        *vcount = 1;
+        return 5;
+    }
+
+    ASSRT((count + 2) < vmax);
+    headlen = sprintf(head, "%X%s", (unsigned int)len, _crlf);
+    v[0].iov_base = head;
+    v[0].iov_len = headlen;
+    v[1].iov_base = (void *)buff;
+    v[1].iov_len = len;
+    v[2].iov_base = (void *)_crlf;
+    v[2].iov_len = 2;
+    totallen = headlen + len + 2;
+
+    return totallen;
 }

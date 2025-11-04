@@ -24,6 +24,11 @@
 #include "chttp.h"
 
 
+/* private preprocessors */
+#define ERR(c) if (c) return -1
+#define ASSRT(c) if (!(c)) return -1
+
+
 int
 chttp_transferencoding(char *buff);
 

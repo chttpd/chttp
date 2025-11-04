@@ -34,23 +34,23 @@ test_chunked_malformed() {
 
     /* more data needed */
     in = "foo";
-    eqint(-2, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
+    eqint(-2, chttp_chunked_parse(in, strlen(in), &chunk, &plen));
 
     in = "3\rXfoo";
-    eqint(-2, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
+    eqint(-2, chttp_chunked_parse(in, strlen(in), &chunk, &plen));
 
     /* malformed */
     in = "3\r\nfooXX\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
+    eqint(-1, chttp_chunked_parse(in, strlen(in), &chunk, &plen));
 
     in = "3X\r\nfoo\r\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
+    eqint(-1, chttp_chunked_parse(in, strlen(in), &chunk, &plen));
 
     in = "3XX\nfoo\r\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
+    eqint(-1, chttp_chunked_parse(in, strlen(in), &chunk, &plen));
 
     in = "XX\r\nfoo\r\n0\r\n\r\n";
-    eqint(-1, chttp_chunkedcodec_getchunk(in, strlen(in), &chunk, &plen));
+    eqint(-1, chttp_chunked_parse(in, strlen(in), &chunk, &plen));
 }
 
 
@@ -63,14 +63,14 @@ test_chunked() {
     ssize_t chunklen;
     size_t plen;
 
-    chunklen = chttp_chunkedcodec_getchunk(cursor, len, &chunk, &plen);
+    chunklen = chttp_chunked_parse(cursor, len, &chunk, &plen);
     eqint(3, chunklen);
     eqint(8, plen);
     eqnstr("foo", chunk, chunklen);
 
     cursor += plen;
     len -= plen;
-    chunklen = chttp_chunkedcodec_getchunk(cursor, len, &chunk, &plen);
+    chunklen = chttp_chunked_parse(cursor, len, &chunk, &plen);
     eqint(0, chunklen);
     eqint(5, plen);
 }

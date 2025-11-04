@@ -27,6 +27,7 @@
 
 /* system */
 #include <sys/types.h>
+#include <sys/uio.h>
 
 
 #cmakedefine CONFIG_CHTTP_HEADERSMAX @CONFIG_CHTTP_HEADERSMAX@
@@ -68,6 +69,7 @@ struct chttp_packet {
     size_t headerlen;
     size_t headermax;
 
+    int encoding;
     char *content;
     size_t contentmax;
     size_t contentlen;
@@ -136,12 +138,9 @@ chttp_status_t
 chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 
 
-/* packet builder */
-
-
 int
 chttp_packet_allocate(struct chttp_packet *p, int headerpages,
-        int contentpages);
+        int contentpages, int encoding);
 
 
 void
@@ -184,6 +183,10 @@ int
 chttp_packet_write(struct chttp_packet *p, const char *fmt, ...);
 
 
+ssize_t
+chttp_packet_iovec(struct chttp_packet *p, struct iovec v[], int *vcount);
+
+
 struct chttp_response *
 chttp_response_new(uint8_t pages);
 
@@ -205,8 +208,13 @@ chttp_headerset_get(struct chttp_headerset *set, const char *name);
 
 
 ssize_t
-chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
-        const char **chunk, size_t *garbage);
+chttp_chunked_parse(const char *buff, size_t bufflen, const char **chunk,
+        size_t *garbage);
+
+
+ssize_t
+chttp_chunked_iovec(const char *buff, size_t len, struct iovec v[],
+        int *vcount);
 
 
 int

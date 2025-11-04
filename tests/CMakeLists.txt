@@ -5,7 +5,7 @@ list(APPEND testrules
   store
   status
   request
-  responsemaker
+  responsebuilder
   response
   headerset
   chunked

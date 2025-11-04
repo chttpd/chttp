@@ -183,7 +183,7 @@ _startline_parse(struct chttp_request *r, char *line) {
 
 
 struct chttp_request *
-chttp_request_new(uint8_t pages) {
+chttp_request_new(int pages) {
     struct chttp_request *r;
     int pagesize = getpagesize();
     size_t total = pages * pagesize;

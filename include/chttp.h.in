@@ -55,6 +55,7 @@ struct chttp_store {
 
 /* transfer encoding */
 enum {
+    CHTTP_TE_NONE = 0,
     CHTTP_TE_CHUNKED = 1,
     CHTTP_TE_COMPRESS = 2,
     CHTTP_TE_DEFLATE = 4,
@@ -62,13 +63,14 @@ enum {
 };
 
 
-struct chttp_responsemaker {
-    const char *header;
-    unsigned int headerlen;
+struct chttp_responsebuilder {
+    char *header;
+    size_t headerlen;
+    size_t headermax;
 
     char *content;
     size_t contentmax;
-    size_t contentlength;
+    size_t contentlen;
 };
 
 
@@ -93,7 +95,7 @@ struct chttp_request {
     struct chttp_headerset headers;
 
     /* allocated backends for the data used above */
-    struct chttp_responsemaker response;
+    struct chttp_responsebuilder response;
     struct chttp_store store;
     char storebuff[];
 };
@@ -119,7 +121,7 @@ chttp_status_text(chttp_status_t status);
 
 
 struct chttp_request *
-chttp_request_new(uint8_t pages);
+chttp_request_new(int pages);
 
 
 int
@@ -134,40 +136,53 @@ chttp_status_t
 chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 
 
-int
-chttp_responsemaker_start(struct chttp_request *r, chttp_status_t status,
-        const char *text);
+/* response builder */
 
 
 int
-chttp_responsemaker_vheader(struct chttp_request *r, const char *fmt,
-        va_list args);
+chttp_responsebuilder_allocate(struct chttp_responsebuilder *r,
+        int headerpages, int contentpages);
+
+
+void
+chttp_responsebuilder_free(struct chttp_responsebuilder *r);
+
+
+void
+chttp_responsebuilder_reset(struct chttp_responsebuilder *r);
 
 
 int
-chttp_responsemaker_header(struct chttp_request *r, const char *fmt, ...);
+chttp_responsebuilder_start(struct chttp_responsebuilder *r,
+        chttp_status_t status, const char *text);
 
 
 int
-chttp_responsemaker_header_close(struct chttp_request *r);
+chttp_responsebuilder_vheader(struct chttp_responsebuilder *r,
+        const char *fmt, va_list args);
 
 
 int
-chttp_responsemaker_contenttype(struct chttp_request *r, const char *type,
-        const char *charset);
+chttp_responsebuilder_header(struct chttp_responsebuilder *r,
+        const char *fmt, ...);
 
 
 int
-chttp_responsemaker_content_allocate(struct chttp_request *r, size_t size);
+chttp_responsebuilder_contenttype(struct chttp_responsebuilder *r,
+        const char *type, const char *charset);
 
 
-ssize_t
-chttp_responsemaker_content_vwrite(struct chttp_request *r, const char *fmt,
-        va_list args);
+int
+chttp_responsebuilder_close(struct chttp_responsebuilder *r);
 
 
-ssize_t
-chttp_responsemaker_content_write(struct chttp_request *r, const char *fmt,
+int
+chttp_responsebuilder_vwrite(struct chttp_responsebuilder *r,
+        const char *fmt, va_list args);
+
+
+int
+chttp_responsebuilder_write(struct chttp_responsebuilder *r, const char *fmt,
         ...);
 
 

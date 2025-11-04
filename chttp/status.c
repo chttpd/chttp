@@ -20,7 +20,6 @@
 #include "chttp.h"
 
 /* local private */
-#include "status.h"
 
 
 /* static allocation in standard C is always zero-filled, so this is safe to

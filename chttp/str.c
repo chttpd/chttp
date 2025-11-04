@@ -26,19 +26,6 @@
 #include "str.h"
 
 
-#undef F
-typedef char *str_t;
-#define F str
-#include "functor.c"
-
-
-int
-str_fmap(void *ctx, str_func_t f, char **s) {
-    *s = f(ctx, *s);
-    return 0;
-}
-
-
 char *
 str_trim(char *s, int *len) {
     if (s == NULL) {

@@ -21,7 +21,6 @@
 
 /* local private */
 #include "str.h"
-#include "headerset.h"
 
 /* local public */
 #include "chttp.h"

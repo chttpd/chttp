@@ -25,7 +25,6 @@
 /* thirdparty */
 /* local public */
 /* local private */
-#include "chunked.h"
 
 
 /** tries to extract a chunk from the input buffer.

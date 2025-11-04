@@ -209,4 +209,8 @@ chttp_chunkedcodec_getchunk(const char *buff, size_t bufflen,
         const char **chunk, size_t *garbage);
 
 
+int
+chttp_uridecode(char *encoded);
+
+
 #endif  // INCLUDE_CHTTP_H_IN_

@@ -24,7 +24,6 @@
 #include "common.h"
 #include "store.h"
 #include "str.h"
-#include "response.h"
 
 /* local public */
 #include "chttp.h"

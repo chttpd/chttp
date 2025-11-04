@@ -24,7 +24,6 @@
 
 /* local private */
 #include "store.h"
-#include "packetbuilder.h"
 
 /* local public */
 #include "chttp.h"

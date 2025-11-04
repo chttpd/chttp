@@ -24,12 +24,6 @@
 #include <stdbool.h>
 
 
-#undef F
-typedef char *str_t;
-#define F str
-#include "functor.h"
-
-
 int
 str_tokenizeall(char *str, const char *delim, int count, char *out[]);
 

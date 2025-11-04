@@ -1,6 +1,5 @@
 include(CTest)
 list(APPEND testrules
-  functor
   str
   store
   status

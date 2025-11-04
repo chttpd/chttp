@@ -24,8 +24,6 @@
 #include "common.h"
 #include "store.h"
 #include "str.h"
-#include "uri.h"
-#include "request.h"
 
 /* local public */
 #include "chttp.h"
@@ -144,7 +142,7 @@ _pathquery_split(char *uri, char **path, char **query) {
 
     switch (str_tokenizeall(uri, "?", 2, tokens)) {
         case 2:
-            uridecode(tokens[1]);
+            chttp_uridecode(tokens[1]);
             *query = tokens[1];
             break;
         case 1:

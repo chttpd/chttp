@@ -30,6 +30,7 @@
 
 /* local private */
 #include "common.h"
+#include "str.h"
 
 
 static const char *_proto = "HTTP/1.1";
@@ -118,14 +119,14 @@ chttp_packet_startresponse(struct chttp_packet *p, chttp_status_t status,
 
 static int
 _vhprintf(struct chttp_packet *p, const char *fmt, va_list args) {
-    size_t len;
+    ssize_t len;
     size_t avail;
     char *s;
 
     avail = p->headermax - p->headerlen;
     s = p->header + p->headerlen;
     len = vsnprintf(s, avail, fmt, args);
-    if (len >= avail) {
+    if ((len < 0) || (len >= avail)) {
         return -1;
     }
 
@@ -150,14 +151,8 @@ _hprintf(struct chttp_packet *p, const char *fmt, ...) {
 int
 chttp_packet_vheader(struct chttp_packet *p, const char *fmt,
         va_list args) {
-    if (_vhprintf(p, fmt, args)) {
-        return -1;
-    }
-
-    if (_hprintf(p, "\r\n")) {
-        return -1;
-    }
-
+    ERR(_vhprintf(p, fmt, args));
+    ERR(_hprintf(p, "\r\n"));
     return 0;
 }
 
@@ -194,6 +189,20 @@ chttp_packet_contenttype(struct chttp_packet *p, const char *type,
         return -1;
     }
 
+    return 0;
+}
+
+
+int
+chttp_packet_transferencoding(struct chttp_packet *p, int encoding) {
+    ERR(_hprintf(p, "Transfer-Encoding: "));
+
+    if (encoding & CHTTP_TE_CHUNKED) {
+        ERR(_hprintf(p, "chunked"));
+    }
+
+    ERR(_hprintf(p, "\r\n"));
+    p->encoding = encoding;
     return 0;
 }
 
@@ -269,7 +278,7 @@ chttp_packet_iovec(struct chttp_packet *p, struct iovec v[], int *vcount) {
             ccount = vmax - count;
             clen = chttp_chunked_iovec(p->content, p->contentlen, v + count,
                     &ccount);
-            ASSRT(clen == -1);
+            ASSRT(clen > 0);
             count += ccount;
             totallen += clen;
         }

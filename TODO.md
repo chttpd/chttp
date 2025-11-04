@@ -1,4 +1,5 @@
 ## todo
+- handle all vsnprintf and snprintf err negative value
 - maximum allowed request header length assertion
 - url formencodded 
 - multipart

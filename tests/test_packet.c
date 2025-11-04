@@ -52,11 +52,13 @@ test_packet_headers() {
 
     eqint(0, chttp_packet_allocate(&p, 1, 1, CHTTP_TE_NONE));
     eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, NULL));
-    eqint(0, chttp_packet_header(&p, "foo = %s", "bar"));
+    eqint(0, chttp_packet_header(&p, "foo: %s", "bar"));
+    eqint(0, chttp_packet_transferencoding(&p, CHTTP_TE_CHUNKED));
     eqint(0, chttp_packet_contenttype(&p, "text/plain", "utf-8"));
     eqint(0, chttp_packet_close(&p));
     eqnstr("HTTP/1.1 200 Ok\r\n"
-            "foo = bar\r\n"
+            "foo: bar\r\n"
+            "Transfer-Encoding: chunked\r\n"
             "Content-Type: text/plain; charset=utf-8\r\n"
             "Content-Length: 0\r\n"
             "\r\n",
@@ -86,8 +88,8 @@ test_packet_content() {
 
 int
 main() {
-    test_packet_content();
     test_packet_headers();
+    test_packet_content();
     test_packet_start();
     return EXIT_SUCCESS;
 }

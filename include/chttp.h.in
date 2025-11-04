@@ -187,6 +187,10 @@ ssize_t
 chttp_packet_iovec(struct chttp_packet *p, struct iovec v[], int *vcount);
 
 
+int
+chttp_packet_transferencoding(struct chttp_packet *p, int encoding);
+
+
 struct chttp_response *
 chttp_response_new(uint8_t pages);
 

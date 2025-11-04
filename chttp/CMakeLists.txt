@@ -9,7 +9,7 @@ add_library(uri OBJECT uri.c uri.h)
 add_library(headerset OBJECT headerset.c headerset.h)
 add_library(status OBJECT status.c status.h)
 add_library(request OBJECT request.c request.h)
-add_library(responsebuilder OBJECT responsebuilder.c responsebuilder.h)
+add_library(packetbuilder OBJECT packetbuilder.c packetbuilder.h)
 add_library(response OBJECT response.c response.h)
 add_library(chttp STATIC
   $<TARGET_OBJECTS:common>
@@ -20,6 +20,6 @@ add_library(chttp STATIC
   $<TARGET_OBJECTS:uri>
   $<TARGET_OBJECTS:headerset>
   $<TARGET_OBJECTS:request>
-  $<TARGET_OBJECTS:responsebuilder>
+  $<TARGET_OBJECTS:packetbuilder>
   $<TARGET_OBJECTS:response>
 )

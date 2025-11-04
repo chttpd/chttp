@@ -63,7 +63,7 @@ enum {
 };
 
 
-struct chttp_responsebuilder {
+struct chttp_packet {
     char *header;
     size_t headerlen;
     size_t headermax;
@@ -95,7 +95,7 @@ struct chttp_request {
     struct chttp_headerset headers;
 
     /* allocated backends for the data used above */
-    struct chttp_responsebuilder response;
+    struct chttp_packet response;
     struct chttp_store store;
     char storebuff[];
 };
@@ -140,50 +140,48 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 
 
 int
-chttp_responsebuilder_allocate(struct chttp_responsebuilder *r,
-        int headerpages, int contentpages);
+chttp_packetbuilder_allocate(struct chttp_packet *p, int headerpages,
+        int contentpages);
 
 
 void
-chttp_responsebuilder_free(struct chttp_responsebuilder *r);
+chttp_packetbuilder_free(struct chttp_packet *p);
 
 
 void
-chttp_responsebuilder_reset(struct chttp_responsebuilder *r);
+chttp_packetbuilder_reset(struct chttp_packet *p);
 
 
 int
-chttp_responsebuilder_start(struct chttp_responsebuilder *r,
+chttp_packetbuilder_startresponse(struct chttp_packet *p,
         chttp_status_t status, const char *text);
 
 
 int
-chttp_responsebuilder_vheader(struct chttp_responsebuilder *r,
-        const char *fmt, va_list args);
+chttp_packetbuilder_vheader(struct chttp_packet *p, const char *fmt,
+        va_list args);
 
 
 int
-chttp_responsebuilder_header(struct chttp_responsebuilder *r,
-        const char *fmt, ...);
+chttp_packetbuilder_header(struct chttp_packet *p, const char *fmt, ...);
 
 
 int
-chttp_responsebuilder_contenttype(struct chttp_responsebuilder *r,
-        const char *type, const char *charset);
+chttp_packetbuilder_contenttype(struct chttp_packet *p, const char *type,
+        const char *charset);
 
 
 int
-chttp_responsebuilder_close(struct chttp_responsebuilder *r);
+chttp_packetbuilder_close(struct chttp_packet *p);
 
 
 int
-chttp_responsebuilder_vwrite(struct chttp_responsebuilder *r,
-        const char *fmt, va_list args);
+chttp_packetbuilder_vwrite(struct chttp_packet *p, const char *fmt,
+        va_list args);
 
 
 int
-chttp_responsebuilder_write(struct chttp_responsebuilder *r, const char *fmt,
-        ...);
+chttp_packetbuilder_write(struct chttp_packet *p, const char *fmt, ...);
 
 
 struct chttp_response *

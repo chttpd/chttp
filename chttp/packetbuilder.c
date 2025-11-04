@@ -24,7 +24,7 @@
 
 /* local private */
 #include "store.h"
-#include "responsebuilder.h"
+#include "packetbuilder.h"
 
 /* local public */
 #include "chttp.h"
@@ -34,8 +34,8 @@ static const char *_proto = "HTTP/1.1";
 
 
 int
-chttp_responsebuilder_allocate(struct chttp_responsebuilder *r,
-        int headerpages, int contentpages) {
+chttp_packetbuilder_allocate(struct chttp_packet *p, int headerpages,
+        int contentpages) {
     void *h;
     void *c = NULL;
     size_t pagesize = getpagesize();
@@ -53,39 +53,39 @@ chttp_responsebuilder_allocate(struct chttp_responsebuilder *r,
         }
     }
 
-    r->header = h;
-    r->headermax = pagesize * headerpages;
-    r->headerlen = 0;
+    p->header = h;
+    p->headermax = pagesize * headerpages;
+    p->headerlen = 0;
 
     if (c) {
-        r->contentmax = pagesize * contentpages;
+        p->contentmax = pagesize * contentpages;
     }
-    r->content = c;
-    r->contentlen = 0;
+    p->content = c;
+    p->contentlen = 0;
 
     return 0;
 }
 
 
 void
-chttp_responsebuilder_free(struct chttp_responsebuilder *r) {
-    free(r->header);
+chttp_packetbuilder_free(struct chttp_packet *p) {
+    free(p->header);
 
-    if (r->content) {
-        free(r->content);
+    if (p->content) {
+        free(p->content);
     }
 }
 
 
 void
-chttp_responsebuilder_reset(struct chttp_responsebuilder *r) {
-    r->headerlen = 0;
-    r->contentlen = 0;
+chttp_packetbuilder_reset(struct chttp_packet *p) {
+    p->headerlen = 0;
+    p->contentlen = 0;
 }
 
 
 int
-chttp_responsebuilder_start(struct chttp_responsebuilder *r,
+chttp_packetbuilder_startresponse(struct chttp_packet *p,
         chttp_status_t status, const char *text) {
     size_t len;
 
@@ -102,44 +102,42 @@ chttp_responsebuilder_start(struct chttp_responsebuilder *r,
     }
 
 
-    len = snprintf(r->header, r->headermax, "%s %d %s\r\n", _proto, status,
+    len = snprintf(p->header, p->headermax, "%s %d %s\r\n", _proto, status,
             text);
-    if (len >= r->headermax) {
+    if (len >= p->headermax) {
         return -1;
     }
 
-    r->headerlen += len;
+    p->headerlen += len;
     return 0;
 }
 
 
 static int
-_vhprintf(struct chttp_responsebuilder *r,
-        const char *fmt, va_list args) {
+_vhprintf(struct chttp_packet *p, const char *fmt, va_list args) {
     size_t len;
     size_t avail;
-    char *p;
+    char *s;
 
-    avail = r->headermax - r->headerlen;
-    p = r->header + r->headerlen;
-    len = vsnprintf(p, avail, fmt, args);
+    avail = p->headermax - p->headerlen;
+    s = p->header + p->headerlen;
+    len = vsnprintf(s, avail, fmt, args);
     if (len >= avail) {
         return -1;
     }
 
-    r->headerlen += len;
+    p->headerlen += len;
     return 0;
 }
 
 
 static int
-_hprintf(struct chttp_responsebuilder *r,
-        const char *fmt, ...) {
+_hprintf(struct chttp_packet *p, const char *fmt, ...) {
     va_list args;
     int ret;
 
     va_start(args, fmt);
-    ret = _vhprintf(r, fmt, args);
+    ret = _vhprintf(p, fmt, args);
     va_end(args);
 
     return ret;
@@ -147,13 +145,13 @@ _hprintf(struct chttp_responsebuilder *r,
 
 
 int
-chttp_responsebuilder_vheader(struct chttp_responsebuilder *r,
-        const char *fmt, va_list args) {
-    if (_vhprintf(r, fmt, args)) {
+chttp_packetbuilder_vheader(struct chttp_packet *p, const char *fmt,
+        va_list args) {
+    if (_vhprintf(p, fmt, args)) {
         return -1;
     }
 
-    if (_hprintf(r, "\r\n")) {
+    if (_hprintf(p, "\r\n")) {
         return -1;
     }
 
@@ -162,13 +160,12 @@ chttp_responsebuilder_vheader(struct chttp_responsebuilder *r,
 
 
 int
-chttp_responsebuilder_header(struct chttp_responsebuilder *r,
-        const char *fmt, ...) {
+chttp_packetbuilder_header(struct chttp_packet *p, const char *fmt, ...) {
     va_list args;
     int ret;
 
     va_start(args, fmt);
-    ret = chttp_responsebuilder_vheader(r, fmt, args);
+    ret = chttp_packetbuilder_vheader(p, fmt, args);
     va_end(args);
 
     return ret;
@@ -176,21 +173,21 @@ chttp_responsebuilder_header(struct chttp_responsebuilder *r,
 
 
 int
-chttp_responsebuilder_contenttype(struct chttp_responsebuilder *r,
-        const char *type, const char *charset) {
+chttp_packetbuilder_contenttype(struct chttp_packet *p, const char *type,
+        const char *charset) {
     if (type == NULL) {
         return -1;
     }
 
     if (charset) {
-        if (_hprintf(r, "Content-Type: %s; charset=%s\r\n", type, charset)) {
+        if (_hprintf(p, "Content-Type: %s; charset=%s\r\n", type, charset)) {
             return -1;
         }
 
         return 0;
     }
 
-    if (_hprintf(r, "Content-Type: %s\r\n", type)) {
+    if (_hprintf(p, "Content-Type: %s\r\n", type)) {
         return -1;
     }
 
@@ -199,16 +196,16 @@ chttp_responsebuilder_contenttype(struct chttp_responsebuilder *r,
 
 
 int
-chttp_responsebuilder_close(struct chttp_responsebuilder *r) {
-    if (r->content) {
-        if (_hprintf(r, "Content-Length: %d\r\n\r\n", r->contentlen)) {
+chttp_packetbuilder_close(struct chttp_packet *p) {
+    if (p->content) {
+        if (_hprintf(p, "Content-Length: %d\r\n\r\n", p->contentlen)) {
             return -1;
         }
 
         return 0;
     }
 
-    if (_hprintf(r, "\r\n")) {
+    if (_hprintf(p, "\r\n")) {
         return -1;
     }
 
@@ -217,32 +214,31 @@ chttp_responsebuilder_close(struct chttp_responsebuilder *r) {
 
 
 int
-chttp_responsebuilder_vwrite(struct chttp_responsebuilder *r,
-        const char *fmt, va_list args) {
+chttp_packetbuilder_vwrite(struct chttp_packet *p, const char *fmt,
+        va_list args) {
     size_t len;
     size_t avail;
-    char *p;
+    char *s;
 
-    avail = r->contentmax - r->contentlen;
-    p = r->content + r->contentlen;
-    len = vsnprintf(p, avail, fmt, args);
+    avail = p->contentmax - p->contentlen;
+    s = p->content + p->contentlen;
+    len = vsnprintf(s, avail, fmt, args);
     if (len >= avail) {
         return -1;
     }
 
-    r->contentlen += len;
+    p->contentlen += len;
     return 0;
 }
 
 
 int
-chttp_responsebuilder_write(struct chttp_responsebuilder *r, const char *fmt,
-        ...) {
+chttp_packetbuilder_write(struct chttp_packet *p, const char *fmt, ...) {
     va_list args;
     ssize_t bytes;
 
     va_start(args, fmt);
-    bytes = chttp_responsebuilder_vwrite(r, fmt, args);
+    bytes = chttp_packetbuilder_vwrite(p, fmt, args);
     va_end(args);
 
     return bytes;

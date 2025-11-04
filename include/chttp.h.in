@@ -95,7 +95,7 @@ struct chttp_request {
     struct chttp_headerset headers;
 
     /* allocated backends for the data used above */
-    struct chttp_packet response;
+    // struct chttp_packet response;
     struct chttp_store store;
     char storebuff[];
 };

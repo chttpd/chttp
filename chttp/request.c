@@ -234,27 +234,8 @@ chttp_request_parse(struct chttp_request *r, char *header, size_t size) {
 }
 
 
-int
-chttp_request_free(struct chttp_request *r) {
-    if (r == NULL) {
-        return -1;
-    }
-
-    if (r->response.content) {
-        free(r->response.content);
-    }
-
-    free(r);
-    return 0;
-}
-
-
 void
 chttp_request_reset(struct chttp_request *r) {
-    if (r->response.content) {
-        free(r->response.content);
-    }
-
     memset(r, 0, ((void *)&r->store) - ((void *)r));
     r->store.len = 0;
     r->contentlength = -1;

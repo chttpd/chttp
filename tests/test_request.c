@@ -36,7 +36,7 @@ test_request_new() {
     r = chttp_request_new(3);
     isnotnull(r);
     eqint(-1, r->contentlength);
-    chttp_request_free(r);
+    free(r);
 }
 
 
@@ -62,7 +62,7 @@ test_request_startline() {
     eqstr("/foo/bar", r->path);
 
     eqint(400, requestf(r, "GET /foo/bar HTTP/1.1\r\n\r\n"));
-    chttp_request_free(r);
+    free(r);
 }
 
 
@@ -96,7 +96,7 @@ test_request_headers_parse() {
     eqint(0, requestf(r, "GET / HTTP/1.1\r\n"
                 "transfer-encoding: chunked, deflate\r\n"));
     eqint(CHTTP_TE_CHUNKED | CHTTP_TE_DEFLATE, r->transferencoding);
-    chttp_request_free(r);
+    free(r);
 }
 
 

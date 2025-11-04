@@ -33,7 +33,7 @@ static const char *_proto = "HTTP/1.1";
 
 
 int
-chttp_packetbuilder_allocate(struct chttp_packet *p, int headerpages,
+chttp_packet_allocate(struct chttp_packet *p, int headerpages,
         int contentpages) {
     void *h;
     void *c = NULL;
@@ -67,7 +67,7 @@ chttp_packetbuilder_allocate(struct chttp_packet *p, int headerpages,
 
 
 void
-chttp_packetbuilder_free(struct chttp_packet *p) {
+chttp_packet_free(struct chttp_packet *p) {
     free(p->header);
 
     if (p->content) {
@@ -77,15 +77,15 @@ chttp_packetbuilder_free(struct chttp_packet *p) {
 
 
 void
-chttp_packetbuilder_reset(struct chttp_packet *p) {
+chttp_packet_reset(struct chttp_packet *p) {
     p->headerlen = 0;
     p->contentlen = 0;
 }
 
 
 int
-chttp_packetbuilder_startresponse(struct chttp_packet *p,
-        chttp_status_t status, const char *text) {
+chttp_packet_startresponse(struct chttp_packet *p, chttp_status_t status,
+        const char *text) {
     size_t len;
 
     if (status <= 0) {
@@ -144,7 +144,7 @@ _hprintf(struct chttp_packet *p, const char *fmt, ...) {
 
 
 int
-chttp_packetbuilder_vheader(struct chttp_packet *p, const char *fmt,
+chttp_packet_vheader(struct chttp_packet *p, const char *fmt,
         va_list args) {
     if (_vhprintf(p, fmt, args)) {
         return -1;
@@ -159,12 +159,12 @@ chttp_packetbuilder_vheader(struct chttp_packet *p, const char *fmt,
 
 
 int
-chttp_packetbuilder_header(struct chttp_packet *p, const char *fmt, ...) {
+chttp_packet_header(struct chttp_packet *p, const char *fmt, ...) {
     va_list args;
     int ret;
 
     va_start(args, fmt);
-    ret = chttp_packetbuilder_vheader(p, fmt, args);
+    ret = chttp_packet_vheader(p, fmt, args);
     va_end(args);
 
     return ret;
@@ -172,7 +172,7 @@ chttp_packetbuilder_header(struct chttp_packet *p, const char *fmt, ...) {
 
 
 int
-chttp_packetbuilder_contenttype(struct chttp_packet *p, const char *type,
+chttp_packet_contenttype(struct chttp_packet *p, const char *type,
         const char *charset) {
     if (type == NULL) {
         return -1;
@@ -195,7 +195,7 @@ chttp_packetbuilder_contenttype(struct chttp_packet *p, const char *type,
 
 
 int
-chttp_packetbuilder_close(struct chttp_packet *p) {
+chttp_packet_close(struct chttp_packet *p) {
     if (p->content) {
         if (_hprintf(p, "Content-Length: %d\r\n\r\n", p->contentlen)) {
             return -1;
@@ -213,7 +213,7 @@ chttp_packetbuilder_close(struct chttp_packet *p) {
 
 
 int
-chttp_packetbuilder_vwrite(struct chttp_packet *p, const char *fmt,
+chttp_packet_vwrite(struct chttp_packet *p, const char *fmt,
         va_list args) {
     size_t len;
     size_t avail;
@@ -232,12 +232,12 @@ chttp_packetbuilder_vwrite(struct chttp_packet *p, const char *fmt,
 
 
 int
-chttp_packetbuilder_write(struct chttp_packet *p, const char *fmt, ...) {
+chttp_packet_write(struct chttp_packet *p, const char *fmt, ...) {
     va_list args;
     ssize_t bytes;
 
     va_start(args, fmt);
-    bytes = chttp_packetbuilder_vwrite(p, fmt, args);
+    bytes = chttp_packet_vwrite(p, fmt, args);
     va_end(args);
 
     return bytes;

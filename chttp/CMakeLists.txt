@@ -8,7 +8,7 @@ add_library(chunked OBJECT chunked.c)
 add_library(headerset OBJECT headerset.c)
 add_library(status OBJECT status.c)
 add_library(request OBJECT request.c)
-add_library(packetbuilder OBJECT packetbuilder.c)
+add_library(packet OBJECT packet.c)
 add_library(response OBJECT response.c)
 add_library(chttp STATIC
   $<TARGET_OBJECTS:common>
@@ -18,6 +18,6 @@ add_library(chttp STATIC
   $<TARGET_OBJECTS:status>
   $<TARGET_OBJECTS:headerset>
   $<TARGET_OBJECTS:request>
-  $<TARGET_OBJECTS:packetbuilder>
+  $<TARGET_OBJECTS:packet>
   $<TARGET_OBJECTS:response>
 )

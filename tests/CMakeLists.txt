@@ -4,7 +4,7 @@ list(APPEND testrules
   store
   status
   request
-  packetbuilder
+  packet
   response
   headerset
   chunked

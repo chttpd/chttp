@@ -28,36 +28,33 @@
 
 
 void
-test_packetbuilder_start() {
+test_packet_start() {
     struct chttp_packet p;
 
-    eqint(0, chttp_packetbuilder_allocate(&p, 1, 1));
-    eqint(0, chttp_packetbuilder_startresponse(&p, CHTTP_STATUS_200_OK,
-                NULL));
+    eqint(0, chttp_packet_allocate(&p, 1, 1));
+    eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, NULL));
     eqnstr("HTTP/1.1 200 Ok\r\n", p.header, p.headerlen);
 
-    chttp_packetbuilder_reset(&p);
-    eqint(0, chttp_packetbuilder_startresponse(&p, CHTTP_STATUS_200_OK,
-                "foo"));
+    chttp_packet_reset(&p);
+    eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, "foo"));
     eqnstr("HTTP/1.1 200 foo\r\n", p.header, p.headerlen);
 
-    eqint(-1, chttp_packetbuilder_startresponse(&p, 0, NULL));
-    eqint(-1, chttp_packetbuilder_startresponse(&p, 0, "foo"));
+    eqint(-1, chttp_packet_startresponse(&p, 0, NULL));
+    eqint(-1, chttp_packet_startresponse(&p, 0, "foo"));
 
-    chttp_packetbuilder_free(&p);
+    chttp_packet_free(&p);
 }
 
 
 void
-test_packetbuilder_headers() {
+test_packet_headers() {
     struct chttp_packet p;
 
-    eqint(0, chttp_packetbuilder_allocate(&p, 1, 1));
-    eqint(0, chttp_packetbuilder_startresponse(&p, CHTTP_STATUS_200_OK,
-                NULL));
-    eqint(0, chttp_packetbuilder_header(&p, "foo = %s", "bar"));
-    eqint(0, chttp_packetbuilder_contenttype(&p, "text/plain", "utf-8"));
-    eqint(0, chttp_packetbuilder_close(&p));
+    eqint(0, chttp_packet_allocate(&p, 1, 1));
+    eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, NULL));
+    eqint(0, chttp_packet_header(&p, "foo = %s", "bar"));
+    eqint(0, chttp_packet_contenttype(&p, "text/plain", "utf-8"));
+    eqint(0, chttp_packet_close(&p));
     eqnstr("HTTP/1.1 200 Ok\r\n"
             "foo = bar\r\n"
             "Content-Type: text/plain; charset=utf-8\r\n"
@@ -65,33 +62,32 @@ test_packetbuilder_headers() {
             "\r\n",
              p.header, p.headerlen);
 
-    chttp_packetbuilder_free(&p);
+    chttp_packet_free(&p);
 }
 
 
 void
-test_packetbuilder_content() {
+test_packet_content() {
     struct chttp_packet p;
 
-    eqint(0, chttp_packetbuilder_allocate(&p, 1, 1));
-    eqint(0, chttp_packetbuilder_startresponse(&p, CHTTP_STATUS_200_OK,
-                NULL));
-    eqint(0, chttp_packetbuilder_write(&p, "foo %s ", "bar"));
-    eqint(0, chttp_packetbuilder_write(&p, "baz %s", "qux"));
-    eqint(0, chttp_packetbuilder_close(&p));
+    eqint(0, chttp_packet_allocate(&p, 1, 1));
+    eqint(0, chttp_packet_startresponse(&p, CHTTP_STATUS_200_OK, NULL));
+    eqint(0, chttp_packet_write(&p, "foo %s ", "bar"));
+    eqint(0, chttp_packet_write(&p, "baz %s", "qux"));
+    eqint(0, chttp_packet_close(&p));
     eqnstr("HTTP/1.1 200 Ok\r\n"
             "Content-Length: 15\r\n"
             "\r\n",
              p.header, p.headerlen);
     eqnstr("foo bar baz qux", p.content, p.contentlen);
-    chttp_packetbuilder_free(&p);
+    chttp_packet_free(&p);
 }
 
 
 int
 main() {
-    test_packetbuilder_content();
-    test_packetbuilder_headers();
-    test_packetbuilder_start();
+    test_packet_content();
+    test_packet_headers();
+    test_packet_start();
     return EXIT_SUCCESS;
 }

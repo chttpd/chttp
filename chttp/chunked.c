@@ -122,6 +122,7 @@ chttp_chunked_iovec(const char *buff, size_t len, struct iovec v[],
     v[2].iov_base = (void *)_crlf;
     v[2].iov_len = 2;
     totallen = headlen + len + 2;
+    *vcount = 3;
 
     return totallen;
 }

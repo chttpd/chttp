@@ -62,10 +62,10 @@ chttp_packet_allocate(struct chttp_packet *p, int headerpages,
 
     if (c) {
         p->contentmax = pagesize * contentpages;
-        p->encoding = encoding;
     }
     p->content = c;
     p->contentlen = 0;
+    p->encoding = encoding;
 
     return 0;
 }
@@ -149,7 +149,7 @@ _hprintf(struct chttp_packet *p, const char *fmt, ...) {
 
 
 int
-chttp_packet_vheader(struct chttp_packet *p, const char *fmt,
+chttp_packet_vheaderf(struct chttp_packet *p, const char *fmt,
         va_list args) {
     ERR(_vhprintf(p, fmt, args));
     ERR(_hprintf(p, "\r\n"));
@@ -158,12 +158,12 @@ chttp_packet_vheader(struct chttp_packet *p, const char *fmt,
 
 
 int
-chttp_packet_header(struct chttp_packet *p, const char *fmt, ...) {
+chttp_packet_headerf(struct chttp_packet *p, const char *fmt, ...) {
     va_list args;
     int ret;
 
     va_start(args, fmt);
-    ret = chttp_packet_vheader(p, fmt, args);
+    ret = chttp_packet_vheaderf(p, fmt, args);
     va_end(args);
 
     return ret;
@@ -209,7 +209,7 @@ chttp_packet_transferencoding(struct chttp_packet *p, int encoding) {
 
 int
 chttp_packet_close(struct chttp_packet *p) {
-    if (p->content) {
+    if (!(p->encoding & CHTTP_TE_CHUNKED) && (p->contentlen >= 0)) {
         if (_hprintf(p, "Content-Length: %d\r\n\r\n", p->contentlen)) {
             return -1;
         }
@@ -226,7 +226,7 @@ chttp_packet_close(struct chttp_packet *p) {
 
 
 int
-chttp_packet_vwrite(struct chttp_packet *p, const char *fmt,
+chttp_packet_vwritef(struct chttp_packet *p, const char *fmt,
         va_list args) {
     size_t len;
     size_t avail;
@@ -235,7 +235,7 @@ chttp_packet_vwrite(struct chttp_packet *p, const char *fmt,
     avail = p->contentmax - p->contentlen;
     s = p->content + p->contentlen;
     len = vsnprintf(s, avail, fmt, args);
-    if (len >= avail) {
+    if ((len <= 0) || (len >= avail)) {
         return -1;
     }
 
@@ -245,15 +245,32 @@ chttp_packet_vwrite(struct chttp_packet *p, const char *fmt,
 
 
 int
-chttp_packet_write(struct chttp_packet *p, const char *fmt, ...) {
+chttp_packet_writef(struct chttp_packet *p, const char *fmt, ...) {
     va_list args;
     ssize_t bytes;
 
     va_start(args, fmt);
-    bytes = chttp_packet_vwrite(p, fmt, args);
+    bytes = chttp_packet_vwritef(p, fmt, args);
     va_end(args);
 
     return bytes;
+}
+
+
+int
+chttp_packet_write(struct chttp_packet *p, const char *buff, size_t len) {
+    size_t avail;
+    char *s;
+
+    avail = p->contentmax - p->contentlen;
+    if (avail < len) {
+        return -1;
+    }
+
+    s = p->content + p->contentlen;
+    memcpy(s, buff, len);
+    p->contentlen += len;
+    return 0;
 }
 
 
@@ -273,22 +290,20 @@ chttp_packet_iovec(struct chttp_packet *p, struct iovec v[], int *vcount) {
         totallen = p->headerlen;
     }
 
-    if (p->content) {
-        if (p->encoding == CHTTP_TE_CHUNKED) {
-            ccount = vmax - count;
-            clen = chttp_chunked_iovec(p->content, p->contentlen, v + count,
-                    &ccount);
-            ASSRT(clen > 0);
-            count += ccount;
-            totallen += clen;
-        }
-        else {
-            ASSRT(count < vmax);
-            v[count].iov_base = p->content;
-            v[count].iov_len = p->contentlen;
-            count++;
-            totallen += p->contentlen;
-        }
+    if (p->encoding & CHTTP_TE_CHUNKED) {
+        ccount = vmax - count;
+        clen = chttp_chunked_iovec(p->content, p->contentlen, &v[count],
+                &ccount);
+        ASSRT(clen > 0);
+        count += ccount;
+        totallen += clen;
+    }
+    else if (p->contentlen) {
+        ASSRT(count < vmax);
+        v[count].iov_base = p->content;
+        v[count].iov_len = p->contentlen;
+        count++;
+        totallen += p->contentlen;
     }
 
     if (count == 0) {

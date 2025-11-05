@@ -41,6 +41,13 @@ add_subdirectory(chttp)
 install(TARGETS chttp DESTINATION "lib")
 install(FILES 
   ${PROJECT_BINARY_DIR}/include/chttp/chttp.h 
+  ${PROJECT_SOURCE_DIR}/include/chttp/chunked.h
+  ${PROJECT_SOURCE_DIR}/include/chttp/headerset.h
+  ${PROJECT_SOURCE_DIR}/include/chttp/packet.h
+  ${PROJECT_SOURCE_DIR}/include/chttp/request.h
+  ${PROJECT_SOURCE_DIR}/include/chttp/response.h
+  ${PROJECT_SOURCE_DIR}/include/chttp/status.h
+  ${PROJECT_SOURCE_DIR}/include/chttp/types.h
   DESTINATION "include/chttp"
 )
 

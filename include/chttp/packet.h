@@ -39,12 +39,12 @@ chttp_packet_startresponse(struct chttp_packet *p, chttp_status_t status,
 
 
 int
-chttp_packet_vheader(struct chttp_packet *p, const char *fmt,
+chttp_packet_vheaderf(struct chttp_packet *p, const char *fmt,
         va_list args);
 
 
 int
-chttp_packet_header(struct chttp_packet *p, const char *fmt, ...);
+chttp_packet_headerf(struct chttp_packet *p, const char *fmt, ...);
 
 
 int
@@ -57,12 +57,16 @@ chttp_packet_close(struct chttp_packet *p);
 
 
 int
-chttp_packet_vwrite(struct chttp_packet *p, const char *fmt,
+chttp_packet_vwritef(struct chttp_packet *p, const char *fmt,
         va_list args);
 
 
 int
-chttp_packet_write(struct chttp_packet *p, const char *fmt, ...);
+chttp_packet_writef(struct chttp_packet *p, const char *fmt, ...);
+
+
+int
+chttp_packet_write(struct chttp_packet *p, const char *buff, size_t len);
 
 
 ssize_t

@@ -26,7 +26,7 @@
 #include <sys/uio.h>
 
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
 
 /* local private */
 #include "common.h"

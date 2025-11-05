@@ -16,20 +16,18 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef TESTS_FIXTURES_H_
-#define TESTS_FIXTURES_H_
+#ifndef INCLUDE_CHTTP_CHUNKED_H_
+#define INCLUDE_CHTTP_CHUNKED_H_
 
 
-/* local public */
-#include "chttp/chttp.h"
+ssize_t
+chttp_chunked_parse(const char *buff, size_t bufflen, const char **chunk,
+        size_t *garbage);
 
 
-chttp_status_t
-requestf(struct chttp_request *r, const char *fmt, ...);
+ssize_t
+chttp_chunked_iovec(const char *buff, size_t len, struct iovec v[],
+        int *vcount);
 
 
-chttp_status_t
-responsef(struct chttp_response *r, const char *fmt, ...);
-
-
-#endif  // TESTS_FIXTURES_H_
+#endif  // INCLUDE_CHTTP_CHUNKED_H_

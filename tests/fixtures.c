@@ -20,7 +20,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-
 /* local private */
 #include "fixtures.h"
 

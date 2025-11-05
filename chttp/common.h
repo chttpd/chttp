@@ -21,7 +21,7 @@
 
 
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
 
 
 /* private preprocessors */
@@ -30,12 +30,12 @@
 
 
 int
-chttp_transferencoding(char *buff);
+transferencoding(char *buff);
 
 
 int
-chttp_contenttype_parse(struct chttp_store *store, char *in,
-        const char **type, const char **charset);
+contenttype_parse(struct chttp_store *store, char *in, const char **type,
+        const char **charset);
 
 
 #endif  // CHTTP_COMMON_H_

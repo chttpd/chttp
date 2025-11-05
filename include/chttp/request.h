@@ -16,20 +16,24 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef TESTS_FIXTURES_H_
-#define TESTS_FIXTURES_H_
+#ifndef INCLUDE_CHTTP_REQUEST_H_
+#define INCLUDE_CHTTP_REQUEST_H_
 
 
-/* local public */
-#include "chttp/chttp.h"
+struct chttp_request *
+chttp_request_new(int pages);
+
+
+int
+chttp_request_free(struct chttp_request *r);
+
+
+void
+chttp_request_reset(struct chttp_request *r);
 
 
 chttp_status_t
-requestf(struct chttp_request *r, const char *fmt, ...);
+chttp_request_parse(struct chttp_request *r, char *header, size_t size);
 
 
-chttp_status_t
-responsef(struct chttp_response *r, const char *fmt, ...);
-
-
-#endif  // TESTS_FIXTURES_H_
+#endif  // INCLUDE_CHTTP_REQUEST_H_

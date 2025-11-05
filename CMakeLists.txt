@@ -19,8 +19,8 @@ include_directories(
   ${CMAKE_BINARY_DIR}/include
 )
 configure_file(
-  include/chttp.h.in 
-  include/chttp.h 
+  include/chttp/chttp.h.in 
+  include/chttp/chttp.h 
   @ONLY
 )
 
@@ -40,8 +40,8 @@ add_subdirectory(chttp)
 
 install(TARGETS chttp DESTINATION "lib")
 install(FILES 
-  ${PROJECT_BINARY_DIR}/include/chttp.h 
-  DESTINATION "include/"
+  ${PROJECT_BINARY_DIR}/include/chttp/chttp.h 
+  DESTINATION "include/chttp"
 )
 
 

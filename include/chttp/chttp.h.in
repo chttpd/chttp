@@ -16,20 +16,36 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef TESTS_FIXTURES_H_
-#define TESTS_FIXTURES_H_
+#ifndef INCLUDE_CHTTP_CHTTP_H_IN_
+#define INCLUDE_CHTTP_CHTTP_H_IN_
 
+
+/* standard */
+#include <stdint.h>
+#include <stdarg.h>
+#include <stdlib.h>
+
+/* system */
+#include <sys/types.h>
+#include <sys/uio.h>
 
 /* local public */
-#include "chttp/chttp.h"
+#cmakedefine CONFIG_CHTTP_HEADERSMAX @CONFIG_CHTTP_HEADERSMAX@
+#include <chttp/types.h>
+#include <chttp/status.h>
+#include <chttp/packet.h>
+#include <chttp/chunked.h>
+#include <chttp/headerset.h>
+#include <chttp/request.h>
+#include <chttp/response.h>
 
 
-chttp_status_t
-requestf(struct chttp_request *r, const char *fmt, ...);
+int
+chttp_uridecode(char *encoded);
 
 
-chttp_status_t
-responsef(struct chttp_response *r, const char *fmt, ...);
+int
+chttp_transferencoding(char *buff);
 
 
-#endif  // TESTS_FIXTURES_H_
+#endif  // INCLUDE_CHTTP_CHTTP_H_IN_

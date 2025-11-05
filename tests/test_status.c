@@ -24,7 +24,7 @@
 #include <cutest.h>
 
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
 
 
 void

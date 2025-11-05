@@ -24,7 +24,10 @@
 #include <stdarg.h>
 
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
+
+
+#define store_avail(s) ((s).size - (s).len)
 
 
 void

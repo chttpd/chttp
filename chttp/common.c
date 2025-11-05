@@ -26,11 +26,11 @@
 #include "common.h"
 
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
 
 
 int
-chttp_transferencoding(char *buff) {
+transferencoding(char *buff) {
     int ret = 0;
     char *saveptr;
     char *token;
@@ -64,8 +64,8 @@ chttp_transferencoding(char *buff) {
 
 
 int
-chttp_contenttype_parse(struct chttp_store *store, char *in,
-        const char **type, const char **charset) {
+contenttype_parse(struct chttp_store *store, char *in, const char **type,
+        const char **charset) {
     char *tokens[2];
 
     switch (str_tokenizeall(in, ";", 2, tokens)) {

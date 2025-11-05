@@ -17,7 +17,7 @@
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
 
 /* local private */
 
@@ -36,6 +36,6 @@ static const char * _statuses[1000] = {
 
 
 const char *
-chttp_status_text(chttp_status_t status) {
-    return _statuses[status];
+chttp_status_text(chttp_status_t code) {
+    return _statuses[code];
 }

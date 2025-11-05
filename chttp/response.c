@@ -26,7 +26,7 @@
 #include "str.h"
 
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
 
 
 /** determine and store known headers.
@@ -41,7 +41,7 @@ _header_known(struct chttp_response *r, char *header) {
     int ret;
 
     if (strcasestr(header, "transfer-encoding:") == header) {
-        ret = chttp_transferencoding(str_trim(header + 18, NULL));
+        ret = transferencoding(str_trim(header + 18, NULL));
         if (ret == -1) {
             return -1;
         }
@@ -57,8 +57,7 @@ _header_known(struct chttp_response *r, char *header) {
 
     if (str_startswith_ci(header, "content-type:")) {
         tmp = str_trim(header + 13, NULL);
-        if (chttp_contenttype_parse(&r->store, tmp, &r->contenttype,
-                    &r->charset)) {
+        if (contenttype_parse(&r->store, tmp, &r->contenttype, &r->charset)) {
             return -1;
         }
 

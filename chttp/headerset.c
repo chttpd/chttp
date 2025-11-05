@@ -23,7 +23,7 @@
 #include "str.h"
 
 /* local public */
-#include "chttp.h"
+#include "chttp/chttp.h"
 
 
 const char *

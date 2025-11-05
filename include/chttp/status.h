@@ -16,20 +16,12 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef TESTS_FIXTURES_H_
-#define TESTS_FIXTURES_H_
+#ifndef INCLUDE_CHTTP_STATUS_H_
+#define INCLUDE_CHTTP_STATUS_H_
 
 
-/* local public */
-#include "chttp/chttp.h"
+const char *
+chttp_status_text(chttp_status_t code);
 
 
-chttp_status_t
-requestf(struct chttp_request *r, const char *fmt, ...);
-
-
-chttp_status_t
-responsef(struct chttp_response *r, const char *fmt, ...);
-
-
-#endif  // TESTS_FIXTURES_H_
+#endif  // INCLUDE_CHTTP_STATUS_H_

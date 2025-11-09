@@ -275,41 +275,40 @@ chttp_packet_write(struct chttp_packet *p, const char *buff, size_t len) {
 
 
 ssize_t
-chttp_packet_iovec(struct chttp_packet *p, struct iovec v[], int *vcount) {
-    int count = 0;
-    int vmax = *vcount;
+chttp_packet_iovec(struct chttp_packet *p, struct iovec v[], int *count) {
+    int c = 0;
+    int maxv = *count;
     size_t totallen = 0;
-    ssize_t clen;
-    int ccount;
+    ssize_t ret;
+    int tmp;
 
     if (p->headerlen) {
-        ASSRT(count < vmax);
-        v[count].iov_base = (void *)p->header;
-        v[count].iov_len = p->headerlen;
-        count++;
+        ASSRT(maxv - c);
+        v[c].iov_base = (void *)p->header;
+        v[c].iov_len = p->headerlen;
+        c++;
         totallen = p->headerlen;
     }
 
     if (p->encoding & CHTTP_TE_CHUNKED) {
-        ccount = vmax - count;
-        clen = chttp_chunked_iovec(p->content, p->contentlen, &v[count],
-                &ccount);
-        ASSRT(clen > 0);
-        count += ccount;
-        totallen += clen;
+        tmp = maxv - c;
+        ret = chttp_chunked_iovec(p->content, p->contentlen, v + c, &tmp);
+        ASSRT(ret > 0);
+        c += tmp;
+        totallen += ret;
     }
     else if (p->contentlen) {
-        ASSRT(count < vmax);
-        v[count].iov_base = p->content;
-        v[count].iov_len = p->contentlen;
-        count++;
+        ASSRT(maxv - c);
+        v[c].iov_base = p->content;
+        v[c].iov_len = p->contentlen;
+        c++;
         totallen += p->contentlen;
     }
 
-    if (count == 0) {
+    if (c == 0) {
         return -1;
     }
 
-    *vcount = count;
+    *count = c;
     return totallen;
 }

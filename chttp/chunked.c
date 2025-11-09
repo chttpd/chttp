@@ -98,31 +98,36 @@ chttp_chunked_parse(const char *buff, size_t bufflen,
 
 ssize_t
 chttp_chunked_iovec(const char *buff, size_t len, struct iovec v[],
-        int *vcount) {
+        int *count) {
     size_t totallen = 0;
-    int vmax = *vcount;
-    int count = 0;
+    int c = 0;
+    int maxv = *count;
     char head[32];
     int headlen;
 
     if (len == 0) {
-        ASSRT(count < vmax);
-        v[0].iov_base = (void *)_terminator;
-        v[0].iov_len = 5;
-        *vcount = 1;
-        return 5;
+        ASSRT(maxv - c);
+        v[c].iov_base = (void *)_terminator;
+        v[c].iov_len = 5;
+        c++;
+        totallen = 5;
+        goto done;
     }
 
-    ASSRT((count + 2) < vmax);
+    ASSRT((maxv - c) >= 3);
     headlen = sprintf(head, "%X%s", (unsigned int)len, _crlf);
-    v[0].iov_base = head;
-    v[0].iov_len = headlen;
-    v[1].iov_base = (void *)buff;
-    v[1].iov_len = len;
-    v[2].iov_base = (void *)_crlf;
-    v[2].iov_len = 2;
+    v[c].iov_base = head;
+    v[c].iov_len = headlen;
+    c++;
+    v[c].iov_base = (void *)buff;
+    v[c].iov_len = len;
+    c++;
+    v[c].iov_base = (void *)_crlf;
+    v[c].iov_len = 2;
+    c++;
     totallen = headlen + len + 2;
-    *vcount = 3;
 
+done:
+    *count = c;
     return totallen;
 }

@@ -48,6 +48,7 @@ install(FILES
   ${PROJECT_SOURCE_DIR}/include/chttp/response.h
   ${PROJECT_SOURCE_DIR}/include/chttp/status.h
   ${PROJECT_SOURCE_DIR}/include/chttp/types.h
+  ${PROJECT_SOURCE_DIR}/include/chttp/str.h
   DESTINATION "include/chttp"
 )
 

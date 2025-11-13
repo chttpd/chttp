@@ -27,7 +27,7 @@
 
 
 char *
-str_trim(char *s, int *len) {
+chttp_str_trim(char *s, int *len) {
     if (s == NULL) {
         return NULL;
     }
@@ -76,10 +76,10 @@ str_tokenize(char *str, const char *restrict delim, char **restrict saveptr) {
     if (found) {
         found[0] = '\0';
         *saveptr = found + delimlen;
-        return str_trim(start, NULL);
+        return chttp_str_trim(start, NULL);
     }
 
-    found = str_trim(start, &len);
+    found = chttp_str_trim(start, &len);
     *saveptr = found + len;
     return found;
 }

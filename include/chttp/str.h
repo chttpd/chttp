@@ -16,24 +16,12 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CHTTP_STR_H_
-#define CHTTP_STR_H_
-
-
-/* standard */
-#include <stdbool.h>
-
-
-int
-str_tokenizeall(char *str, const char *delim, int count, char *out[]);
+#ifndef INCLUDE_CHTTP_STR_H_
+#define INCLUDE_CHTTP_STR_H_
 
 
 char *
-str_tokenize(char *str, const char *restrict delim, char **restrict saveptr);
+chttp_str_trim(char *s, int *len);
 
 
-bool
-str_startswith_ci(const char *restrict s, const char *restrict prefix);
-
-
-#endif  // CHTTP_STR_H_
+#endif  // INCLUDE_CHTTP_STR_H_

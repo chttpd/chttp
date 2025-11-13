@@ -41,7 +41,7 @@ _header_known(struct chttp_request *r, char *header) {
     int ret;
 
     if (strcasestr(header, "transfer-encoding:") == header) {
-        ret = transferencoding(str_trim(header + 18, NULL));
+        ret = transferencoding(chttp_str_trim(header + 18, NULL));
         if (ret == -1) {
             return -1;
         }
@@ -51,7 +51,7 @@ _header_known(struct chttp_request *r, char *header) {
     }
 
     if (strcasestr(header, "content-length:") == header) {
-        r->contentlength = atoi(str_trim(header + 15, NULL));
+        r->contentlength = atoi(chttp_str_trim(header + 15, NULL));
         return 0;
     }
 
@@ -68,7 +68,7 @@ _header_known(struct chttp_request *r, char *header) {
     }
 
     if (str_startswith_ci(header, "content-type:")) {
-        tmp = str_trim(header + 13, NULL);
+        tmp = chttp_str_trim(header + 13, NULL);
         if (contenttype_parse(&r->store, tmp, &r->contenttype, &r->charset)) {
             return -1;
         }

@@ -32,6 +32,7 @@
 /* local public */
 #cmakedefine CONFIG_CHTTP_HEADERSMAX @CONFIG_CHTTP_HEADERSMAX@
 #include <chttp/types.h>
+#include <chttp/str.h>
 #include <chttp/status.h>
 #include <chttp/packet.h>
 #include <chttp/chunked.h>

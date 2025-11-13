@@ -270,5 +270,5 @@ store_suffixifprefix_ci(struct chttp_store *lb, const char **dst, size_t *len,
         return 1;
     }
 
-    return store_str(lb, dst, len, str_trim(str + kwlen, NULL));
+    return store_str(lb, dst, len, chttp_str_trim(str + kwlen, NULL));
 }

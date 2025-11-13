@@ -54,5 +54,5 @@ chttp_headerset_get(struct chttp_headerset *set, const char *name) {
 found:
 
     value = (char *) set->list[i] + tmplen;
-    return str_trim(value, NULL);
+    return chttp_str_trim(value, NULL);
 }

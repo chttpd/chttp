@@ -22,6 +22,9 @@
 /* thirdparty */
 #include <cutest.h>
 
+/* local public */
+#include "chttp/str.h"
+
 /* local private */
 #include "str.h"
 
@@ -109,15 +112,15 @@ test_str_trim() {
 
     sprintf(tmp, "\r");
     eqint(1, strlen(tmp));
-    eqstr("", str_trim(tmp, &len));
+    eqstr("", chttp_str_trim(tmp, &len));
     eqint(0, len);
 
     sprintf(tmp, " foo ");
-    eqstr("foo", str_trim(tmp, &len));
+    eqstr("foo", chttp_str_trim(tmp, &len));
     eqint(3, len);
 
     sprintf(tmp, "foo\r");
-    eqstr("foo", str_trim(tmp, &len));
+    eqstr("foo", chttp_str_trim(tmp, &len));
     eqint(3, len);
 }
 

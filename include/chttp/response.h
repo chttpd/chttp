@@ -24,7 +24,7 @@ struct chttp_response *
 chttp_response_new(uint8_t pages);
 
 
-chttp_status_t
+int
 chttp_response_parse(struct chttp_response *r, char *header, size_t size);
 
 

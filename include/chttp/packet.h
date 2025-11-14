@@ -39,6 +39,11 @@ chttp_packet_startresponse(struct chttp_packet *p, chttp_status_t status,
 
 
 int
+chttp_packet_startrequest(struct chttp_packet *p, const char *verb,
+        const char *path);
+
+
+int
 chttp_packet_vheaderf(struct chttp_packet *p, const char *fmt,
         va_list args);
 

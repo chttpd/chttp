@@ -117,6 +117,23 @@ chttp_packet_startresponse(struct chttp_packet *p, chttp_status_t status,
 }
 
 
+int
+chttp_packet_startrequest(struct chttp_packet *p, const char *verb,
+        const char *path) {
+    size_t len;
+
+    ASSRT(path && verb);
+    len = snprintf(p->header, p->headermax, "%s %s %s\r\n", verb, path,
+            _proto);
+    if (len >= p->headermax) {
+        return -1;
+    }
+
+    p->headerlen += len;
+    return 0;
+}
+
+
 static int
 _vhprintf(struct chttp_packet *p, const char *fmt, va_list args) {
     ssize_t len;

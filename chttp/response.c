@@ -68,7 +68,7 @@ _header_known(struct chttp_response *r, char *header) {
 }
 
 
-static chttp_status_t
+static int
 _headers_parse(struct chttp_response *r, char *headers) {
     int ret;
     int i;
@@ -177,7 +177,7 @@ chttp_response_reset(struct chttp_response *r) {
 }
 
 
-chttp_status_t
+int
 chttp_response_parse(struct chttp_response *r, char *header, size_t size) {
     char *line;
     char *saveptr;

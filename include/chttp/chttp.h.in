@@ -30,6 +30,9 @@
 #include <sys/uio.h>
 
 /* local public */
+#define CHTTP_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@"
+#define CHTTP_VERSION_MINOR "@PROJECT_VERSION_MINOR@"
+#define CHTTP_VERSION "@PROJECT_VERSION@"
 #cmakedefine CONFIG_CHTTP_HEADERSMAX @CONFIG_CHTTP_HEADERSMAX@
 #include <chttp/types.h>
 #include <chttp/str.h>
